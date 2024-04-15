@@ -1,0 +1,4 @@
+{
+    "backendDev": "http://192.168.1.221:8081/",
+    "backend": "https://gwapi.dividia.net/"
+  }

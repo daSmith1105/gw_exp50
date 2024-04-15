@@ -1,30 +1,58 @@
 {
   "expo": {
-    "name": "mobile_exp50",
-    "slug": "mobile_exp50",
-    "version": "1.0.0",
+    "name": "gateWatcher",
+    "slug": "gateWatcher",
+    "version": "2024.3.1",
     "orientation": "portrait",
+    "primaryColor": "#4286f4",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+    "updates": {
+      "checkAutomatically": "ON_ERROR_RECOVERY"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
+    "splash": {
+      "image": "./assets/splash.png",
+      "backgroundColor": "#000030",
+      "resizeMode": "contain"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "net.dividia.gateWatcher",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": "No",
+        "NSCameraUsageDescription": "GateWatcher requires access to your camera to upload vehicle images for verification.",
+        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "net.dividia.gateWatcherMobile",
+      "permissions": [
+        "CAMERA",
+        "READ_PHONE_STATE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.FOREGROUND_SERVICE"
+      ],
+      "versionCode": 37
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5415d830-7744-11e9-99ec-519355c0e12e"
+      }
     }
   }
 }

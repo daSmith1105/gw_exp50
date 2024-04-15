@@ -1,0 +1,32 @@
+{
+    "cli": {
+      "version": ">= 3.13.3"
+    },
+    "build": {
+      "development": {
+        "developmentClient": true,
+        "distribution": "internal"
+      },
+      "preview": {
+        "ios": {
+          "simulator": true
+        }
+      },
+      "production": {}
+    },
+    "submit": {
+      "production": {
+        "android": {
+          "serviceAccountKeyPath": "../path/to/api-xxx-yyy-zzz.json",
+          "track": "internal"
+        },
+        "ios": {
+          "appleId": "mustangdas@gmail.com",
+          "ascAppId": "1463857908",
+          "appleTeamId": "V86Z5J4ACZ",
+          "appName": "GateWatcher",
+          "bundleIdentifier": "net.dividia.gateWatcher"
+        }
+      }
+    }
+  }
