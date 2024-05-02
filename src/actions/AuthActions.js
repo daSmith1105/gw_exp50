@@ -3,15 +3,13 @@ import axios from 'axios';
 import deviceInfo from '../utility/deviceInfo';
 import { getAppData } from './DataActions';
 
-import { 
+import {
   LOGIN_USER_START,
   LOGIN_USER_SUCCESS,
   LOGIN_USER_FAIL,
   LOGOUT_USER,
   CLEAR_FORM,
   CLEAR_LOGIN_ERROR,
-  CLEAR_CUSTOMER_NETWORK_DATA,
-  SET_ONSITE_COUNT
 } from './types';
 
 const API_URL = config.backend;
@@ -25,12 +23,12 @@ export const loginUser = ({ email, password }) => {
       headers: {
         'Content-Accept': 'application-json'
       },
-      url: API_URL + 'api/login?new=yes', 
+      url: API_URL + 'api/login?new=yes',
       data: {
         username: email,
         password: password,
         sDevice: deviceInfo()
-      }, 
+      },
       timeout: 10000
     })
     .then( async response => {
@@ -44,7 +42,7 @@ export const loginUser = ({ email, password }) => {
         throw new Error("Only guard users may log into this application. Please make sure the user have access of type 'guard' under user setup.")
       };
       // get the data we need for startup - lpns, companies, people by customerId
-      dispatch(getAppData(user.customerId, user.token));
+      dispatch(getAppData(user.customerId, 'JWT ' + user.token));
       // log in the user and set user data in state
       loginUserSuccess( dispatch, user );
     })
@@ -105,34 +103,4 @@ export const clearLoginError = () => {
   return {
     type: CLEAR_LOGIN_ERROR
   };
-};
-
-export const getOnsiteCountBySite = ( siteId, token ) => {
-  let targetUrl = API_URL + 'api/getonsitecountbysite/' + siteId + '?new=yes';
-  return async ( dispatch ) => {
-    await axios({
-      method: 'get',
-      headers: {
-        'Content-Accept': 'application-json',
-        'Authorization': token
-      },
-      url: targetUrl, 
-      timeout: 15000
-    })
-    .then( response => {
-      let data = response.data;
-      let vehicleCount = data.bVehicleCount ? data.bVehicleCount : 0;
-      let peopleCount = data.bOnsiteCount ? data.bOnsiteCount : 0;
-
-      dispatch({ 
-        type: SET_ONSITE_COUNT, 
-        vehicleCount: vehicleCount,
-        peopleCount: peopleCount 
-      })
-    })
-    .catch( error => {
-      console.log(error);
-      // dont update the counts state
-    });
-  }
 };

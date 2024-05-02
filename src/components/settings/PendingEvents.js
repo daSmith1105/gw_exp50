@@ -15,8 +15,8 @@ const PendingEvents = (props) => {
         <RowSection>
             <Text style={{ fontSize: moderateScale(16,.2) }}>Events Pending Upload: </Text>
             { localEvents && localEvents.length > 0 ?
-                <TouchableOpacity onPress={ () => { props.clearSyncTime(); dispatch(actions.showEventViewerModal()) } } >
-                <Badge 
+                <TouchableOpacity onPress={ () => { dispatch(actions.showEventViewerModal()) } } >
+                <Badge
                         text={ localEvents.length.toString() }
                         width={ moderateScale(80,.2) }
                         backgroundColor="goldenrod"
@@ -25,7 +25,7 @@ const PendingEvents = (props) => {
                         size={ moderateScale(40,.2)} />
                 </TouchableOpacity> :
                 <View>
-                <Badge 
+                <Badge
                         text={ '0' }
                         width={ moderateScale(80,.2) }
                         backgroundColor="goldenrod"

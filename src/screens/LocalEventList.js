@@ -11,7 +11,7 @@ import ListItem from '../components/local_list/ListItem';
 // called by clicking on the 'Events Pending Upload' button in the settings menu
 
 const EventViewer = ( props ) => {
-  // app state 
+  // app state
   const localEvents = useSelector( state => state.data.events );
 
   // component state
@@ -61,24 +61,24 @@ const EventViewer = ( props ) => {
           icon={ 'arrow-circle-left' }
           width={ moderateScale(240,.2) }
           fontSize={ moderateScale(20,.2) }
-          onPress={ () => { dispatch(actions.hideEventViewerModal()); props.resetSyncTime() } } />
+          onPress={ () => { dispatch(actions.hideEventViewerModal()) } } />
       </View>
 
       { showImages &&
           <View style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '105%', zIndex: 10, alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.8)'}}>
-            <ScrollView contentContainerStyle={{ paddingTop: moderateScale(20,.2), paddingBottom: moderateScale(105,.4) }} 
-                        showsVerticalScrollIndicator={ false } 
+            <ScrollView contentContainerStyle={{ paddingTop: moderateScale(20,.2), paddingBottom: moderateScale(105,.4) }}
+                        showsVerticalScrollIndicator={ false }
                         maximumZoomScale={ 2 } >
               <Text style={{ fontSize: moderateScale(14, .2), fontWeight: 'bold', color: 'white' }}>
                 LPN Photo  |  { moment(timestamp).format('MM-DD-YYYY h:mm a') }
               </Text>
-              <Image 
+              <Image
                 source={{ uri: lpn }}
                 style={{ height: moderateScale(400,.5), width: moderateScale(240,.5), borderRadius: 5 }} />
               <Text style={{ fontSize: moderateScale(14, .2), fontWeight: 'bold', color: 'white', marginTop: scale(10) }}>
                 Load Photo  |  { moment(timestamp).format('MM-DD-YYYY h:mm a') }
               </Text>
-              <Image 
+              <Image
                 source={{ uri: load }}
                 style={{ height: moderateScale(400,.5), width: moderateScale(240,.5), borderRadius: 5 }} />
 
@@ -88,7 +88,7 @@ const EventViewer = ( props ) => {
                     <Text style={{ fontSize: moderateScale(14, .2), fontWeight: 'bold', color: 'white', marginTop: scale(10) }}>
                       Photo: { index + 3 }  |  { moment(timestamp).format('MM-DD-YYYY h:mm a') }
                     </Text>
-                    <Image 
+                    <Image
                       source={{ uri: a.path }}
                       style={{ height: moderateScale(400,.5), width: moderateScale(240,.5), borderRadius: 5 }} />
                   </View>
@@ -96,15 +96,15 @@ const EventViewer = ( props ) => {
               }) }
             </ScrollView>
 
-            <View style={{ width: '100%', 
-                            alignItems: 'center', 
-                            position: 'absolute', 
-                            bottom: 0, 
-                            left: 0, 
-                            right: 0, 
-                            margin: 'auto', 
-                            backgroundColor: 'rgba(255,255,255,0.9)', 
-                            paddingBottom: 28, 
+            <View style={{ width: '100%',
+                            alignItems: 'center',
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            margin: 'auto',
+                            backgroundColor: 'rgba(255,255,255,0.9)',
+                            paddingBottom: 28,
                             paddingTop: moderateScale(10,.2) }}>
               <Button
                 text="Back"
@@ -116,7 +116,7 @@ const EventViewer = ( props ) => {
               />
             </View>
 
-          </View> 
+          </View>
       }
 
     </View>

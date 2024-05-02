@@ -30,65 +30,62 @@ const IntakeScreen = props => {
     return(
       <View>
         {/* panel is overlaid on top of the intake form */}
-        { showCamera && 
-            <CameraJS resetSyncTime={ props.resetSyncTime } />  
+        { showCamera &&
+            <CameraJS />
         }
 
         {/* panel is overlaid on top of the intake form */}
         { showAddPassenger &&
-            <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ? 
-                            styles.addPassengerIOS : 
+            <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ?
+                            styles.addPassengerIOS :
                             styles.addPassengerAndroid }>
-              <AddPassengerCount resetSyncTime={ props.resetSyncTime } /> 
+              <AddPassengerCount />
             </View>
         }
 
         {/* panel is overlaid on top of the intake form */}
         { showAddComment &&
-            <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ? 
-                            styles.addCommentIOS : 
+            <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ?
+                            styles.addCommentIOS :
                             styles.addCommentAndroid }>
-              <AddComment resetSyncTime={ props.resetSyncTime } /> 
+              <AddComment />
             </View>
         }
 
         {/* panel is overlaid on top of the intake form */}
-        { showSettingsMenu && 
-            <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ? 
-                            styles.settingsMenuIOS : 
+        { showSettingsMenu &&
+            <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ?
+                            styles.settingsMenuIOS :
                             styles.settingsMenuAndroid }>
-              <SettingsMenu resetSyncTime={props.resetSyncTime } 
-                            clearSyncTime={ props.clearSyncTime } /> 
-            </View> 
+              <SettingsMenu />
+            </View>
         }
 
         {/* panel is overlaid on top of the intake form */}
         { showEventViewer &&
-            <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ? 
-                            styles.eventViewerIOS : 
+            <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ?
+                            styles.eventViewerIOS :
                             styles.eventViewerAndroid }>
-              <EventViewer resetSyncTime={ props.resetSyncTime } />
+              <EventViewer />
             </View>
          }
 
         {/* panel is overlaid on top of the intake form */}
         { showLoginScreen &&
-            <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ? 
-                            styles.loginScreenIOS : 
+            <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ?
+                            styles.loginScreenIOS :
                             styles.loginScreenAndroid }>
-              <LoginScreen resetSyncTime={ props.resetSyncTime } />
-            </View> 
+              <LoginScreen />
+            </View>
         }
 
         <View style={ styles.containerStyle }>
           <Header />
-          <IntakeForm resetSyncTime={ props.resetSyncTime } 
-                      clearSyncTime={ props.clearSyncTime } />    
-          <Footer resetSyncTime={ props.resetSyncTime } 
-                  clearSyncTime={ props.clearSyncTime } />
+          <IntakeForm />
+          <Footer />
         </View>
 
-      </View> 
+      </View>
     )
 };
 
@@ -97,64 +94,64 @@ export default IntakeScreen;
 const styles = {
   containerStyle: {
     position: 'relative',
-    height: `95%`, 
+    height: `95%`,
     marginTop:'5%',
-    width: width 
+    width: width
   },
   addPassengerIOS: {
-    height: height, 
-    width: width 
+    height: height,
+    width: width
   },
   addPassengerAndroid: {
-    height: 0, 
-    width: 0, 
-    position: 'absolute', 
-    top: -2000000, 
+    height: 0,
+    width: 0,
+    position: 'absolute',
+    top: -2000000,
     left: -200000
   },
   addCommentIOS: {
-    height: height, 
-    width: width 
+    height: height,
+    width: width
   },
   addCommentAndroid: {
-    height: 0, 
-    width: 0, 
-    position: 'absolute', 
-    top: -2000000, 
+    height: 0,
+    width: 0,
+    position: 'absolute',
+    top: -2000000,
     left: -200000
   },
   settingsMenuIOS: {
-    height: height, 
+    height: height,
     width: width,
     zIndex: 1
   },
   settingsMenuAndroid: {
-    height: 0, 
-    width: 0, 
-    position: 'absolute', 
-    top: -2000000, 
+    height: 0,
+    width: 0,
+    position: 'absolute',
+    top: -2000000,
     left: -200000
-  },  
+  },
   eventViewerIOS: {
-    height: height, 
-    width: width 
+    height: height,
+    width: width
   },
   eventViewerAndroid: {
-    height: 0, 
-    width: 0, 
-    position: 'absolute', 
-    top: -2000000, 
+    height: 0,
+    width: 0,
+    position: 'absolute',
+    top: -2000000,
     left: -200000
   },
   loginScreenIOS: {
-    height: height, 
-    width: width, 
+    height: height,
+    width: width,
     backgroundColor: 'white',
     zIndex: 1
   },
   loginScreenAndroid: {
-    position: 'absolute', 
-    top: -200000, 
+    position: 'absolute',
+    top: -200000,
     left: -200000
   }
 };

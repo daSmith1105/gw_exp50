@@ -36,9 +36,8 @@ const CameraJS = (props) => {
         getCameraPermissions();
         // cleanup on component unmount
         return () => {
-            props.resetSyncTime()
             dispatch(actions.hideCamera());
-        } 
+        }
     } ,[]);
 
     const navigateToSettings = () => {
@@ -96,13 +95,13 @@ const CameraJS = (props) => {
     const takePicture = async() => {
         setTakingPhoto(true);
         // is this using ref or what?
-        const photo = await camera.takePictureAsync(); 
+        const photo = await camera.takePictureAsync();
         Promise.all([photo])
         .then( async() => {
             try {
-                const imgResize = await ImageManipulator.manipulateAsync(   photo.uri, 
-                                                                            [{resize: { width: 600 } }], 
-                                                                            { compress: .5 } 
+                const imgResize = await ImageManipulator.manipulateAsync(   photo.uri,
+                                                                            [{resize: { width: 600 } }],
+                                                                            { compress: .5 }
                                                                         );
                 Promise.all([imgResize])
                 .then ( () => {
@@ -112,7 +111,7 @@ const CameraJS = (props) => {
                         dispatch(actions.setPhotoData( imageType, imageType , imgResize.uri ));
                     } else {
                        dispatch(actions.setPhotoData( null, imageType , imgResize.uri ));
-                    }; 
+                    };
                     setTakingPhoto(false);
                     dispatch(actions.hideCamera());
                 })
@@ -150,18 +149,18 @@ const CameraJS = (props) => {
         };
 
         // this is a new pattern for expo image picker
-        // prior it was just result.uri 
+        // prior it was just result.uri
         //need to check if this works the same on deveices or if it is an annomolly when using simulator
         let imgURI = result.assets[0].uri;
 
         // image needs to be resized and compressed to save space and be in the proper aspect ratio for upload to server
         const imgResize = await ImageManipulator.manipulateAsync(   imgURI,
-                                                                    [{resize: { width: 600 } }], 
-                                                                    { compress: .5 } 
+                                                                    [{resize: { width: 600 } }],
+                                                                    { compress: .5 }
                                                                 );
-        // const imgResize = await ImageManipulator.manipulateAsync(   result.uri, 
-        //     [{resize: { width: 600 } }], 
-        //     { compress: .5 } 
+        // const imgResize = await ImageManipulator.manipulateAsync(   result.uri,
+        //     [{resize: { width: 600 } }],
+        //     { compress: .5 }
         // );
 
         // determine what photo 'type was opened and set the photo data to the redux store
@@ -172,7 +171,7 @@ const CameraJS = (props) => {
             dispatch(actions.setPhotoData( imageType, imageType , imgResize.uri ));
         } else {
             dispatch(actions.setPhotoData( null, imageType , imgResize.uri ));
-        }; 
+        };
 
         // all done, hide the camera and show intake form
         setTakingPhoto(false);
@@ -182,7 +181,7 @@ const CameraJS = (props) => {
     // pinch to zoom functionality
     const changeZoom = (event) => {
         // hit minimum zoom threshold - snap back to full image
-        if(event.nativeEvent.scale < 0.7){ 
+        if(event.nativeEvent.scale < 0.7){
             setZoom(0);
             return;
         };
@@ -214,7 +213,7 @@ const CameraJS = (props) => {
                     ratio={ ratio }
                     type={ type }
                     flashMode={ flash }
-                    useCamera2Api={true} >  
+                    useCamera2Api={true} >
 
                 <View style={styles.containerStyle}>
 
@@ -222,8 +221,8 @@ const CameraJS = (props) => {
                     <TouchableOpacity onPress={ handleToggleFlash }
                                       style={ styles.flashStyle } >
                         <View style={styles.flashContainerStyle}>
-                            <FontAwesome name="flash" 
-                                         size={ moderateScale(30, .3) } 
+                            <FontAwesome name="flash"
+                                         size={ moderateScale(30, .3) }
                                          color={ flash === 'auto' ? 'goldenrod' : 'white' } />
                             <Text style={{ color: flash === 'auto' ? 'goldenrod' : 'white', marginLeft: scale(4) }}>
                                 { flash }
@@ -239,19 +238,19 @@ const CameraJS = (props) => {
                         <View style={ styles.labelStyle }>
                             <Text style={ styles.imageTypeText }>Photo</Text>
                         </View>
-                    }     
-                </View>   
+                    }
+                </View>
 
                 {/* spinner when taking photo */}
                 { takingPhoto &&
                     <View style={styles.spinnerContainerStyle}>
                         <Spinner color="goldenrod" />
-                    </View>  
-                } 
+                    </View>
+                }
 
                 {/* LPN target window for LPN imageType */}
                 { imageType === 'lpn' &&
-                    <View style={ styles.lpnWindow }></View> 
+                    <View style={ styles.lpnWindow }></View>
                 }
 
                 <View style={ styles.bottomRow }>
@@ -268,8 +267,8 @@ const CameraJS = (props) => {
                     { !takingPhoto ?
                         <TouchableOpacity onPress={ () => takePicture() }
                                           style={{ padding: scale(5) }} >
-                            <FontAwesome name="camera" 
-                                         size={moderateScale(60, .3)} 
+                            <FontAwesome name="camera"
+                                         size={moderateScale(60, .3)}
                                          color= "white" />
                         </TouchableOpacity> :
                         <TouchableOpacity onPress={ () => console.log('taking photo. action unavailable.') }
@@ -281,8 +280,8 @@ const CameraJS = (props) => {
                     {/* Image selection Button  */}
                     <TouchableOpacity style={ styles.bottomRowButton }
                                       onPress={ loadImageFromLibrary } >
-                        <FontAwesome name="image" 
-                                     size={moderateScale(30, .3)} 
+                        <FontAwesome name="image"
+                                     size={moderateScale(30, .3)}
                                      color="white" />
                     </TouchableOpacity>
 
@@ -298,15 +297,15 @@ const CameraJS = (props) => {
                             `GateWatcher needs permission to select photos from this device.`
                             }
                         </Text>
-                        <TouchableOpacity onPress={ navigateToSettings } 
+                        <TouchableOpacity onPress={ navigateToSettings }
                                           style={ styles.settingsOpenStyle }>
                             <Text style={ styles.settingsOpenTextStyle }>Open Settings</Text>
                         </TouchableOpacity>
                         {/* close this modal */}
-                        <TouchableOpacity onPress={ () => closeSettings(showPermissionModal) } 
+                        <TouchableOpacity onPress={ () => closeSettings(showPermissionModal) }
                                           style={ styles.closeModalStyle }>
-                            <FontAwesome name="times-circle" 
-                                         size={moderateScale(30, .2)} 
+                            <FontAwesome name="times-circle"
+                                         size={moderateScale(30, .2)}
                                          color="black" />
                         </TouchableOpacity>
                         </View>
@@ -323,26 +322,26 @@ export default CameraJS;
 
 const styles = {
     cameraStyle: {
-        position: 'absolute', 
-        top: 50, 
-        bottom: 0, 
-        alignItems: 'center', 
+        position: 'absolute',
+        top: 50,
+        bottom: 0,
+        alignItems: 'center',
         zIndex: 30
     },
     containerStyle: {
         flexDirection: 'row'
     },
     flashContainerStyle: {
-        display: 'flex', 
+        display: 'flex',
         flexDirection: 'row',
-        alignItems: 'center', 
+        alignItems: 'center',
         justifyContent: 'center'
     },
     labelStyle: {
         backgroundColor: 'rgba(0,0,0,0.2)',
         marginTop: 0,
         height: scale(90),
-        paddingTop: verticalScale(30), 
+        paddingTop: verticalScale(30),
         width: '100%',
     },
     imageTypeText: {
@@ -352,11 +351,11 @@ const styles = {
         width: '100%',
     },
     spinnerContainerStyle: {
-        position: 'absolute', 
-        top: '43%', 
-        left: 0, 
+        position: 'absolute',
+        top: '43%',
+        left: 0,
         right: 0,
-        margin: 'auto', 
+        margin: 'auto',
         zIndex: 32
     },
     lpnWindow: {
@@ -383,9 +382,9 @@ const styles = {
         marginTop: verticalScale(8)
     },
     backTextStyle: {
-        fontWeight: 'bold', 
-        fontSize: moderateScale(18, .2), 
-        marginBottom: 10, 
+        fontWeight: 'bold',
+        fontSize: moderateScale(18, .2),
+        marginBottom: 10,
         color: 'white'
     },
     flashStyle:{
@@ -400,46 +399,46 @@ const styles = {
         zIndex: 20
     },
     modalContainerStyle: {
-        position: 'absolute', 
-        top: 0, 
-        left: 0, 
-        width: '100%', 
-        height: '100%', 
-        backgroundColor: 'rgba(52, 52, 52, 0.9)', 
-        zIndex: 40, 
-        justifyContent: 'center', 
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(52, 52, 52, 0.9)',
+        zIndex: 40,
+        justifyContent: 'center',
         alignItems: 'center'
     },
     modalInnerContainerStyle: {
-        position: 'absolute', 
-        top: '25%', 
-        left: '10%', 
-        width: '80%', 
-        height: '30%', 
-        backgroundColor: 'white', 
-        borderRadius: 10, 
-        padding: scale(10), 
-        justifyContent: 'center', 
+        position: 'absolute',
+        top: '25%',
+        left: '10%',
+        width: '80%',
+        height: '30%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: scale(10),
+        justifyContent: 'center',
         alignItems: 'center'
     },
     modalTextStyle: {
-        fontSize: moderateScale(18, .2), 
-        textAlign: 'center', 
+        fontSize: moderateScale(18, .2),
+        textAlign: 'center',
         marginBottom: scale(20)
     },
     settingsOpenStyle: {
-        padding: scale(10), 
-        backgroundColor: 'goldenrod', 
+        padding: scale(10),
+        backgroundColor: 'goldenrod',
         borderRadius: 10
     },
     settingsOpenTextStyle: {
-        color: 'white', 
+        color: 'white',
         fontSize: moderateScale(16, .2)
     },
     closeModalStyle: {
-        position: 'absolute', 
-        top: 0, 
-        right: 0, 
+        position: 'absolute',
+        top: 0,
+        right: 0,
         padding: scale(10)
     }
 };

@@ -17,7 +17,7 @@ import sevenDaysAgo from '../utility/sevenDaysAgo';
 
 const EventList = (props) => {
   // used for start /end date search
-  // eventually this should be changed to just get in backend 
+  // eventually this should be changed to just get in backend
   // instead of getting the past 7 days, we should get start from 7 days prior to the last db event - most recent db event
   const { tYear, tMonth, tDay } = today();
   const { sdaYear, sdaMonth, sdaDay } = sevenDaysAgo();
@@ -40,7 +40,6 @@ const EventList = (props) => {
   const lpns = useSelector(state => state.data.lpns);
   const companies = useSelector(state => state.data.companies);
   const people = useSelector(state => state.data.people);
-  const localEvents = useSelector(state => state.data.events);
 
   useEffect(() => {
     setShowImages(false);
@@ -65,11 +64,11 @@ const EventList = (props) => {
     setShowImages(true);
   };
 
-  // mapping for each entry in flatlist 
+  // mapping for each entry in flatlist
   const renderItem = ({item}) => {
     if(item){
       return(
-        <ListItem item={item} 
+        <ListItem item={item}
                   viewEventImages={viewEventImages}
                   allGateEvents={props.allGateEvents} />
       )
@@ -98,7 +97,7 @@ const EventList = (props) => {
     };
   };
 
-  const setStart = (event: DateTimePickerEvent, date: Date) => {
+  const setStart = (event, date) => {
     const {
       type,
       nativeEvent: {timestamp},
@@ -106,7 +105,7 @@ const EventList = (props) => {
     setStartDate(new Date(event.nativeEvent.timestamp));
   };
 
-  const setEnd = (event: DateTimePickerEvent, date: Date) => {
+  const setEnd = (event, date) => {
     const {
       type,
       nativeEvent: {timestamp},
@@ -129,44 +128,9 @@ const EventList = (props) => {
       company: selectedCompany[0],
       driver: selectedDriver[0],
     };
-    
+
     await props.getAllGateEvents(1, searchParams);
     setShowFilter(false);
-  };
-
-  const convertEvents = () => {
-    let newEvents = [];
-    for(let i=0;i<localEvents.length;i++){
-      let event = localEvents[i];
-      event.eventId = makeId(10);
-      event.eventLpnPhoto = event.lpnPhoto;
-      event.eventLoadPhoto = event.loadPhoto;
-      event.eventImages = event.additionalPhotos;
-      event.eventComment = event.comment;
-      event.eventPassengerCount = event.passengerCount;
-      event.eventTimestamp = event.timestamp;
-      event.subscriberId = event.subscriberId;
-      event.subscriberName = '';
-      event.customerId = null;
-      event.customerName = '';
-      event.companyId = event.companyObj.id;
-      event.companyName = event.companyObj.name;
-      event.userId = event.userId;
-      event.userFirst = '';
-      event.userLast = '';
-      event.gateId = event.gateId;
-      event.gateName = '';
-      event.personId = event.driverObj.id;
-      event.personFirst = event.driverObj.name.length > 0 && event.driverObj.name.split(' ')[0] ? event.driverObj.name.split(' ')[0] : '';
-      event.personLast = event.driverObj.name.length > 0 && event.driverObj.name.split(' ')[1] ? event.driverObj.name.split(' ')[1] : '';;
-      event.lpnId = event.lpnObj.id;
-      event.lpnName = event.lpnObj.name;
-      event.typeId = event.type;
-      event.typeName = event.type === 1 ? 'IN' : event.type === 2 ? 'OUT' : event.type === 3 ? 'DENIED' : 'ACCIDENT';
-      newEvents.push(event);
-    };
-    // these will potentially display out of order (by timestamp) - need to sort
-    return ([...newEvents,...props.allGateEvents]);
   };
 
   const closeShowImage = () => {
@@ -205,11 +169,11 @@ const EventList = (props) => {
                     companies={companies}
                     people={people} />
       }
-                  
+
 
       {!props.eventListLoading && !props.EventListError && !showFilter &&
-          <ListPagination currentPage={props.currentPage} 
-                          pages={props.pages} 
+          <ListPagination currentPage={props.currentPage}
+                          pages={props.pages}
                           getAllGateEvents={props.getAllGateEvents} />
       }
 
@@ -220,7 +184,7 @@ const EventList = (props) => {
         !showFilter ?
             <FlatList
               showFilter={showFilter}
-              data={ props.currentPage === 1 && localEvents.length > 0 ? convertEvents() : props.allGateEvents }
+              data={ props.allGateEvents }
               renderItem={ renderItem }
               keyExtractor={ keyExtractor } /> :
         null
@@ -252,13 +216,13 @@ const styles = {
     backgroundColor: 'white'
   },
   headingTextStyle: {
-    fontSize: moderateScale(20,.2), 
+    fontSize: moderateScale(20,.2),
     textAlign: 'center'
   },
   statusTextStyle: {
-    fontSize: moderateScale(20,.2), 
-    textAlign: 'center', 
-    height: '85%', 
+    fontSize: moderateScale(20,.2),
+    textAlign: 'center',
+    height: '85%',
     paddingTop: '20%'
   }
 };

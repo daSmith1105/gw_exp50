@@ -33,9 +33,9 @@ if (__DEV__) {
 class App extends React.Component {
   constructor(props) {
     super(props);
-  
+
     this.state = {
-      isLoadingComplete: true,   
+      isLoadingComplete: true,
       hasCameraPermission: null,
       hasCameraRollPermission: null,
       date: ''
@@ -63,9 +63,7 @@ class App extends React.Component {
     this.setState({ isLoadingComplete: true }, async () => {
         const op1 = await this._loadAssetsAsync();
         let photoDirectory = await FileSystem.getInfoAsync(FileSystem.documentDirectory + 'photos');
-        if ( photoDirectory.exists ) {
-          console.log('Photo directory ready');
-        } else {
+        if ( !photoDirectory.exists ) {
           await FileSystem.makeDirectoryAsync(FileSystem.documentDirectory + 'photos')
         }
       }, () => {
@@ -88,7 +86,7 @@ class App extends React.Component {
       }
     });
   };
-  
+
   async _loadAssetsAsync() {
     const imageAssets = this.cacheImages([
       require('./assets/gw-logo.jpg'),
@@ -105,14 +103,15 @@ class App extends React.Component {
         <Provider store={ store } >
           <StatusBar hidden />
           <Clock date={this.state.date} />
-          <PersistGate loading={ <Loading /> } 
+          <PersistGate loading={ <Loading /> }
                        persistor={ persistor } >
-            { this.state.isLoadingComplete ? 
+            { this.state.isLoadingComplete ?
                 <Main hasCameraPermission={ this.state.hasCameraPermission }
-                      hasCameraRollPermission={ this.state.hasCameraRollPermission} 
-                      isLoadingComplete={ this.state.isLoadingComplete } />  : 
+                      hasCameraRollPermission={ this.state.hasCameraRollPermission}
+                      isLoadingComplete={ this.state.isLoadingComplete } 
+                      timerIntervalID={ this.timer } />  :
                 <Loading />
-            }  
+            }
           </PersistGate>
         </Provider>
       </GestureHandlerRootView>

@@ -1,4 +1,4 @@
-import { 
+import {
   UPDATE_AVAILABLE,
   TOGGLE_LAYOUT_KEYBOARD_VISIBLE,
   TOGGLE_LOGIN,
@@ -11,7 +11,7 @@ import {
   RESET_REDUCER_GROUP // this is used when the app updates to a new version and we need to clear out the entire redux store
 } from '../actions/types';
 
-const INITIAL_STATE = { 
+const INITIAL_STATE = {
   keyboardVisible: false,
   syncRunning: false
 };
@@ -19,13 +19,9 @@ const INITIAL_STATE = {
 export default ( state = INITIAL_STATE, action ) => {
   switch ( action.type ) {
     case RESET_REDUCER_GROUP:
-      return { 
-        ...state,
-        keyboardVisible: false,
-        syncRunning: false
-       };
-    case UPDATE_AVAILABLE: 
-      return {  
+      return {...INITIAL_STATE};
+    case UPDATE_AVAILABLE:
+      return {
         ...state,
         showUpdateModal: true,
         updateAvailable: true
@@ -55,12 +51,12 @@ export default ( state = INITIAL_STATE, action ) => {
         ...state,
         keyboardVisible: false
       };
-    case SHOW_CAMERA: 
+    case SHOW_CAMERA:
       return {
         ...state,
         keyboardVisible: false
       };
-    case SHOW_CAMERA_MODIFIED: 
+    case SHOW_CAMERA_MODIFIED:
     return {
       ...state,
       keyboardVisible: false

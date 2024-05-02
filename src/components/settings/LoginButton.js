@@ -13,7 +13,7 @@ const LoginButton = (props) => {
             <View style={{ flexDirection: 'column', alignItems: 'center' }}>
               <Button
                 text="Login"
-                onPress={ () => { dispatch(actions.toggleLogin()); props.resetSyncTime() } }
+                onPress={ () => { dispatch(actions.toggleLogin()) } }
                 color='grey'
                 icon={ 'sign-in' }
                 width={ moderateScale(240,.2) }

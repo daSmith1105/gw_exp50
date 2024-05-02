@@ -1,4 +1,4 @@
-import { 
+import {
   SAVE_EVENT,
   GET_DATA_SUCCESS,
   GET_DATA_FAIL,
@@ -11,16 +11,12 @@ import {
   UPDATE_NETWORK_STATUS,
   SET_ONSITE_COUNT,
   LOGOUT_USER,
-  LOGIN_USER_SUCCESS,
   REPORT_ERROR_SUCCESS,
   RESET_REDUCER_GROUP, // this is used when the app updates to a new version and we need to clear out the entire redux store,
 } from '../actions/types';
 
-const interval = 30;
-
-const INITIAL_STATE = { 
+const INITIAL_STATE = {
   userInteractionStatus: false,
-  syncInterval: interval, // if this reaches 0 we are going to try and push an event
   lpns: [],
   companies: [],
   people: [],
@@ -40,13 +36,25 @@ const INITIAL_STATE = {
   online: false
 };
 
-const merge = (a, b, property) => a.filter( aa => ! b.find ( bb => aa[property] === bb[property]) ).concat(b);
+const insertSorted = (arr, obj) => {
+  let sortedArr = [...arr]
+
+  // determine where to insert the new obj based on alphabetically sorted names
+  let index = sortedArr.findIndex( a => a.name.localeCompare(obj.name) > 0)
+  // if obj should be inserted in the end
+  if (index === -1) {
+    index = sortedArr.length
+  }
+
+  sortedArr.splice(index, 0, obj)
+  return sortedArr
+}
 
 export default ( state = INITIAL_STATE, action ) => {
   switch ( action.type ) {
     case REPORT_ERROR_SUCCESS:
-      return { 
-        ...state, 
+      return {
+        ...state,
         loading: false,
         eventSaving: false,
         saveEventSuccess: false,
@@ -59,60 +67,42 @@ export default ( state = INITIAL_STATE, action ) => {
         getPeopleError: '',
       }
     case UPDATE_NETWORK_STATUS:
-      return { 
-        ...state, 
+      return {
+        ...state,
         online: action.payload
       }
     case RESET_REDUCER_GROUP:
-      return {
-        userInteractionStatus: false,
-        syncInterval: interval, // if this reaches 0 we are going to try and push an event
-        lpns: [],
-        companies: [],
-        people: [],
-        events: [],
-        loading: false,
-        eventSaving: false,
-        saveEventSuccess: false,
-        saveEventFail: false,
-        eventUploading: false,
-        uploadEventSuccess: false,
-        uploadEventFail: false,
-        getLpnError: '',
-        getCompanyError: '',
-        getPeopleError: '',
-        onsitePeopleCount: 0,
-        onsiteVehicleCount: 0
-      };
-
-
+      return {...INITIAL_STATE};
     case ADD_NEW_LPN:
-      let lpnsLo = state.lpns.slice();
-      if( lpnsLo.length > 0 && lpnsLo[0].id === '0') {
-        lpnsLo.splice( 0, 1 )
-      };
+      // remove the old temporary value - indicated with id = '0' - note that it's a string
+      let lpnsLo = state.lpns.filter(l => l.id !== '0')
+
+      // then insert the new one in a correct position - sorted alphabetically
+      lpnsLo = insertSorted(lpnsLo, {id: '0', name: action.name})
       return {
         ...state,
-        lpns: [ { id: '0', name: action.name }, ...lpnsLo ]
-      };
+        lpns: lpnsLo,
+      }
     case ADD_NEW_COMPANY:
-      let companiesLo = state.companies.slice();
-      if( companiesLo.length > 0 && companiesLo[0].id === '0') {
-        companiesLo.splice( 0, 1 )
-      };
+      // remove the old temporary value - indicated with id = '0' - note that it's a string
+      let companiesLo = state.companies.filter(l => l.id !== '0')
+
+      // then insert the new one in a correct position - sorted alphabetically
+      companiesLo = insertSorted(companiesLo, {id: '0', name: action.name})
       return {
         ...state,
-        companies: [ { id: '0', name: action.name }, ...companiesLo ]
-      };
+        companies: companiesLo,
+      }
     case ADD_NEW_DRIVER:
-      let peopleLo= state.people.slice();
-      if( peopleLo.length > 0 && peopleLo[0].id === '0') {
-        peopleLo.splice( 0, 1 )
-      };
+      // remove the old temporary value - indicated with id = '0' - note that it's a string
+      let peopleLo = state.people.filter(l => l.id !== '0')
+
+      // then insert the new one in a correct position - sorted alphabetically
+      peopleLo = insertSorted(peopleLo, {id: '0', name: action.name})
       return {
         ...state,
-        people: [ { id: '0', name: action.name }, ...peopleLo ]
-      };
+        people: peopleLo,
+      }
     case CLEAR_EVENT_SAVE_MODAL:
       return {
         ...state,
@@ -136,24 +126,15 @@ export default ( state = INITIAL_STATE, action ) => {
       let remainingVehicles = 0;
       // add any current onsite values we have to what was pulled from the network
       if ( state.events.length > 0 ) {
-        const stateVcount = state.onsiteVehicleCount;
-        const statePcount = state.onsitePeopleCount;
         const localE = state.events.slice();
         localE.forEach( e => {
+          // passengerCount is now stored as int, but for backwards compatibility of existing state, let's parse
           if( e.type === 1 ) {
-            remainingVehicles = remainingVehicles + 1;
-            if( parseInt(e.passengerCount) !== 0 ) {
-              remainingPeople = remainingPeople + (parseInt(e.passengerCount) + 1);
-            } else {
-              remainingPeople = remainingPeople + 1;
-            };
+            remainingVehicles++;
+            remainingPeople += parseInt(e.passengerCount) + 1;
           } else if( e.type === 2 ) {
-            remainingVehicles = remainingVehicles - 1;
-            if( parseInt(e.passengerCount) !== 0 ) {
-              remainingPeople = remainingPeople - (parseInt(e.passengerCount) + 1);
-            } else {
-              remainingPeople = remainingPeople - 1;
-            };
+            remainingVehicles--;
+            remainingPeople -= parseInt(e.passengerCount) + 1;
           };
         });
       };
@@ -163,70 +144,12 @@ export default ( state = INITIAL_STATE, action ) => {
 
       return {
         ...state,
-        onsitePeopleCount: parseInt(peopleCount),
-        onsiteVehicleCount: parseInt(vehicleCount)
+        onsitePeopleCount: peopleCount,
+        onsiteVehicleCount: vehicleCount,
       };
-
-    case LOGIN_USER_SUCCESS:
-      let user = action.payload;
-      let remainingP = 0;
-      let remainingV = 0;
-      // add any current onsite values we have to what was pulled from the network
-      if ( state.events.length > 0 ) {
-        const lE = state.events.slice();
-        lE.forEach( e => {
-          if( e.type === 1 ) {
-            remainingV = remainingV + 1;
-            if( parseInt(e.passengerCount) !== 0 ) {
-              remainingP = remainingP + (parseInt(e.passengerCount) + 1);
-            } else {
-              remainingP = remainingP + 1;
-            };
-          } else if( e.type === 2 ) {
-            remainingV = remainingV - 1;
-            if( parseInt(e.passengerCount) !== 0 ) {
-              remainingP = remainingP - (parseInt(e.passengerCount) + 1);
-            } else {
-              remainingP = remainingP - 1;
-            };
-          };
-        });
-      };
-      // add the counts from any local events that have not beemn uploaded to the current db count
-      let pCount = remainingP + user.gatePersonCount;
-      let vCount = remainingV + user.gateVehicleCount;
-
-      return {
-        ...state,
-        onsitePeopleCount: parseInt(pCount),  
-        onsiteVehicleCount: parseInt(vCount)
-      };
-
     case LOGOUT_USER:
-      const localEv = state.events.slice();
-      let rP = 0;
-      let rV = 0;
-      localEv.forEach( e => {
-        if( e.type === 1 ) {
-          rV = rV + 1;
-          if( parseInt(e.passengerCount) !== 0 ) {
-            rP = rP + (parseInt(e.passengerCount) + 1);
-          } else {
-            rP = rP + 1;
-          };
-        } else if( e.type === 2 ) {
-          rV = rV - 1;
-          if( parseInt(e.passengerCount) !== 0 ) {
-            rP = rP - (parseInt(e.passengerCount) + 1);
-          } else {
-            rP = rP - 1;
-          };
-        }
-      })
       return {
         ...state,
-        onsitePeopleCount: parseInt(rP),
-        onsiteVehicleCount: parseInt(rV),
         loading: false,
         eventSaving: false,
         saveEventSuccess: false,
@@ -240,155 +163,90 @@ export default ( state = INITIAL_STATE, action ) => {
       }
     case SAVE_EVENT:
       // save the event to local state
-      const event = action.payload;
-      let onsitePeopleCount = state.onsitePeopleCount;
-      let onsiteVehicleCount = state.onsiteVehicleCount;
-      let lpnArr = state.lpns.slice();
-      let companyArr = state.companies.slice();
-      let peopleArr = state.people.slice();
+      let lpnArr = state.lpns.filter(a => a.id !== '0');            // get lpns without the temporary value
+      let companyArr = state.companies.filter(a => a.id !== '0');   // get companies without the temporary value
+      let peopleArr = state.people.filter(a => a.id !== '0');       // get people without the temporary value
       const eventsArr = state.events.slice();
+      const event = action.payload;
       let lpn = event.lpnObj;
       let company = event.companyObj;
       let driver = event.driverObj;
-      const lpnId = lpn.id;
-      const companyId = company.id;
-      const driverId = driver.id;
 
-      // remove the first item from the given array if the id='0' 
-      // it was temporary and we will be replacing it with a newly created id from the incoming data object
-        if (lpnArr[0].id === '0') {
-            lpnArr.shift()
-        };
-        if (companyArr[0].id === '0') {
-            companyArr.shift()
-        };
-        if (peopleArr[0].id === '0') {
-            peopleArr.shift()
-        };
-
-        // if isNaN( parseInt( lpnId )) this is a new lpn
-        if( isNaN( parseInt(lpnId)) ) {
-          let lpnTemp = lpnArr.find( l => l.id === lpnId );
-          // if we don't find the obj in array push it
-          if(!lpnTemp) { 
-            // add lpn to array if it isnt already there
-            lpnArr.unshift(lpn) 
-          } else {
-            // we have a current licenseplate in the array, update current company and driver for autopopulate if they have changed
-            if(lpnTemp,company !== companyId) {
-              lpnTemp.company = companyId;
-            }
-            if(lpnTemp.person !== driverId) {
-              lpnTemp.person = driverId;
-            }
-          };
-        } else {
-          // we have an existing lpn that was pulled from the remote db, find it and update current company and driver for autopopulate if they have changed
-          let lpnTemp = lpnArr.find( l => l.id === lpnId );
-          if(!lpnTemp) { 
-            console.log('I cant find that lpn, Dave.')
-          } else {
-            // update object with current company and driver
-            lpnTemp.company = companyId
-            lpnTemp.person = driverId
-          };
-        };
-
-        // if isNaN( parseInt( companyId )) this is a new company
-        if( isNaN( parseInt( companyId )) ) {
-            let companyTemp = companyArr.find( c => c.id === companyId );
-            // if we don't find the obj in array push it
-            if(!companyTemp) { 
-              companyArr.unshift(company) 
-            };
-        };
-        
-        // if isNaN( parseInt( driverId )) this is a new company
-        if( isNaN( parseInt( driverId )) ) {
-          const driverTemp = peopleArr.find( d => d.id === driverId );
-          // if we don't find the obj in array push it
-          if(!driverTemp) { 
-            peopleArr.unshift(driver) 
-          };
-        };
-
-        if ( event.type === 1 ) {
-          let addToPersonCount = parseInt(event.passengerCount) === 0 ? 1 : parseInt(event.passengerCount) + 1;
-          onsitePeopleCount = onsitePeopleCount + addToPersonCount;
-          onsiteVehicleCount = onsiteVehicleCount + 1;
-        } else if ( event.type === 2 ) {
-           let subtractPersonCount = parseInt(event.passengerCount) === 0 ? 1 : parseInt(event.passengerCount) + 1;
-           onsitePeopleCount = onsitePeopleCount - subtractPersonCount;
-           onsiteVehicleCount = onsiteVehicleCount - 1;
-         } else {
-           onsitePeopleCount = state.onsitePeopleCount;
-           onsiteVehicleCount = state.onsitePeopleCount;
-         }
-        
-
-        return {
-          ...state,
-          lpns: lpnArr,
-          companies: companyArr,
-          people: peopleArr,
-          events: [ event, ...eventsArr ],
-          eventSaving: false,
-          saveEventSuccess: true,
-          saveEventFail: false,
-          onsitePeopleCount,
-          onsiteVehicleCount
-        };
-
-    case SYNC_DATA:
-      // action.eventsLo should contain any remaining events or []
-      // cycle through remaining events calculating counts for peopleOnsite and vehiclesOnsite
-      // modify state.onsitePeopleCount and onsiteVehicleCount accordingly
-      let currentPeople = state.onsitePeopleCount;
-      let currentVehicles = state.onsiteVehicleCount;
-      let cPersonCounter = 0;
-      let cVehicleCounter = 0;
-      let events = action.eventsLo || [];
-      if ( events.length > 0 ) {
-       events.forEach( e => {
-         if ( e.type === 1 ) {
-           cVehicleCounter = cVehicleCounter + 1;
-           cPersonCounter = parseInt(e.passengerCount) === 0 ? cPersonCounter + 1 : cPersonCounter + ( parseInt(e.passengerCount) + 1)
-         }
-         if ( e.type === 2 ) {
-          cVehicleCounter = cVehicleCounter - 1;
-          cPersonCounter = parseInt(e.passengerCount) === 0 ? cPersonCounter - 1 : cPersonCounter - ( parseInt(e.passengerCount) + 1)
+      // if this is a new lpn, add it (alphabetically sorted), else, update company and driver relations
+      let lpnIndex = lpnArr.findIndex( l => l.id === lpn.id )
+      if (lpnIndex === -1) {
+        if (isNaN(parseInt(lpn.id))) {
+          lpnArr = insertSorted(lpnArr, lpn)
         }
-       });
-      };
-
-      return { 
-        ...state, 
-        lpn: action.combinedLpns,
-        companies: action.combinedCompanies,
-        people: action.combinedPeople,
-        events: action.eventsLo || [],
-        onsitePeopleCount: currentPeople,
-        onsiteVehicleCount: currentVehicles
+      } else {
+        lpnArr[lpnIndex].company = company.id
+        lpnArr[lpnIndex].person = driver.id
       }
 
+      // if this is a new company, add it
+      let compIndex = companyArr.findIndex( c => c.id === company.id )
+      if (compIndex === -1) {
+        if (isNaN(parseInt(company.id))) {
+          companyArr = insertSorted(companyArr, company)
+        }
+      }
+
+      // if this is a new driver, add it
+      let driverIndex = peopleArr.findIndex( d => d.id === driver.id )
+      if (driverIndex === -1) {
+        if (isNaN(parseInt(driver.id))) {
+          peopleArr = insertSorted(peopleArr, driver)
+        }
+      }
+
+      return {
+        ...state,
+        lpns: lpnArr,
+        companies: companyArr,
+        people: peopleArr,
+        events: [ event, ...eventsArr ],
+        eventSaving: false,
+        saveEventSuccess: true,
+        saveEventFail: false,
+      };
+    case SYNC_DATA:
+      // console.log('SYNC_DATA', action)
+      return {
+        ...state,
+        lpns: action.lpns,
+        companies: action.companies,
+        people: action.people,
+        events: action.events,
+      }
     case GET_DATA_SUCCESS:
-      // need to combine values with our locally stored values that have yet to be uploaded 
-      // and update any stored values that have been changed on the server
-      const combinedL = merge(action.payload.lpns, state.lpns.slice(), "id");
-      const combinedC = merge(action.payload.companies, state.companies.slice(), "id");
-      const combinedP = merge(action.payload.people, state.people.slice(), "id");
+      // merge data from server and our local values
+      // note that server data is already sorted, so to save resources
+      // we'll cleanup the local data to only have values that are not in our server array, then insert it in the sorted server array
+      const mergeAndSort = (localArr, serverArr) => {
+        let sortedArr = [...serverArr]
+        const uniqueLocalArr = localArr.filter( lo => !serverArr.find(srv => srv.id === lo.id) )
+
+        for (let i = 0; i < uniqueLocalArr.length; i++) {
+          sortedArr = insertSorted(sortedArr, uniqueLocalArr[i])
+        }
+        return sortedArr
+      }
+
+      const combinedL = mergeAndSort([...state.lpns], action.payload.lpns);
+      const combinedC = mergeAndSort([...state.companies], action.payload.companies);
+      const combinedP = mergeAndSort([...state.people], action.payload.people);
+
+      // console.log('GET_DATA_SUCCESS', {payload: action.payload, statelpns: state.lpns, statecomp: state.companies, statepeople: state.people, combinedL, combinedC, combinedP})
       return {
         ...state,
         lpns: combinedL,
         companies: combinedC,
         people: combinedP
-      }; 
-
+      };
     case GET_DATA_FAIL:
       return {
         ...state
       };
-      
     default:
         return state;
   };

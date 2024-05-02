@@ -22,15 +22,14 @@ const ErrorReporting = (props) => {
     }, []);
 
     const sendErrorReport = () => {
-        props.resetSyncTime();
-        setShowReportSendConfirmation(false);
-    
+        props.setShowReportSendConfirmation(false);
+
         let pending = '[]';
         if(includePendingEvents){
           pending = JSON.stringify(localEvents)
         };
         dispatch(actions.reportError(webToken,comment,subscriberId,customerId,userId,gateId,pending));
-        setShowReportSendConfirmation(false);
+        props.setShowReportSendConfirmation(false);
         setComment('');
         setIncludePendingEvents(false);
     };
@@ -44,20 +43,19 @@ const ErrorReporting = (props) => {
                 confirmText="OK"
                 abortText="Cancel"
                 onConfirm={ sendErrorReport }
-                onAbort={ props.onAbort } > 
+                onAbort={ props.onAbort } >
             <View style={styles.container}>
-                <Text style={styles.commentText}>Add comment: (optional)</Text>              
+                <Text style={styles.commentText}>Add comment: (optional)</Text>
                 <TextInput  style={styles.commentInput}
                             returnKeyType="done"
                             multiline={true}
                             blurOnSubmit={true}
                             onSubmitEditing={()=>{Keyboard.dismiss()}}
-                            multiline={true}
                             textAlignVertical="top"
                             numberOfLines={5}
                             value={comment}
                             onChangeText={ text => setComment(text)} />
-                    
+
                 <View style={styles.switchContainer}>
                     <Switch trackColor={{ false: '#767577', true: '#70E781' }}
                             thumbColor={includePendingEvents ? '#367F41' : '#f4f3f4'}
@@ -74,7 +72,7 @@ const ErrorReporting = (props) => {
                     </Text>
                 }
             </View>
-        </Modal> 
+        </Modal>
     )
 };
 
