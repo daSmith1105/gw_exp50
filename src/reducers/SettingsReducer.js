@@ -3,8 +3,6 @@ import {
   TOGGLE_LOGIN,
   LOGOUT_USER,
   LOGIN_USER_SUCCESS,
-  SHOW_EVENT_VIEWER_MODAL,
-  HIDE_EVENT_VIEWER_MODAL,
   HIDE_REPORTS_MODAL,
   REPORT_ERROR_START,
   REPORT_ERROR_SUCCESS,
@@ -65,18 +63,6 @@ export default ( state = INITIAL_STATE, action ) => {
         reportErrorFail: false,
         reportErrorSuccess: false,
         sendingReport: false
-      };
-    case SHOW_EVENT_VIEWER_MODAL:
-      return {
-        ...state,
-        showSettingsMenu: false,
-        reportErrorFail: false
-      };
-    case HIDE_EVENT_VIEWER_MODAL:
-      return {
-        ...state,
-        showSettingsMenu: true,
-        reportErrorFail: false
       };
     case RESET_REDUCER_GROUP:
     case LOGIN_USER_SUCCESS:

@@ -6,7 +6,6 @@ import { useSelector } from 'react-redux';
 import AddComment from '../components/form/AddComment';
 import AddPassengerCount from '../components/form/AddPassengerCount';
 import SettingsMenu from './SettingsMenu';
-import EventViewer from './LocalEventList';
 import LoginScreen from '../screens/LoginScreen';
 import CameraJS from '../components/form/CameraJS';
 import { useKeepAwake } from 'expo-keep-awake';
@@ -23,7 +22,6 @@ const IntakeScreen = props => {
   const showCamera = useSelector(state => state.camera.showCamera);
   const showAddComment = useSelector(state => state.modal.showAddComment);
   const showAddPassenger = useSelector(state => state.modal.showAddPassenger);
-  const showEventViewer = useSelector(state => state.modal.showEventViewer);
 
   useKeepAwake();
 
@@ -60,15 +58,6 @@ const IntakeScreen = props => {
               <SettingsMenu />
             </View>
         }
-
-        {/* panel is overlaid on top of the intake form */}
-        { showEventViewer &&
-            <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ?
-                            styles.eventViewerIOS :
-                            styles.eventViewerAndroid }>
-              <EventViewer />
-            </View>
-         }
 
         {/* panel is overlaid on top of the intake form */}
         { showLoginScreen &&

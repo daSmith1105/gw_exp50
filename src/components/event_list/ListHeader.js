@@ -14,17 +14,18 @@ const ListHeader = (props) => {
           icon={ 'arrow-circle-left' }
           width={ moderateScale(200,.2) }
           fontSize={ moderateScale(14,.2) }
-          onPress={ props.toggleEventList } />
+          onPress={ props.hideEventList } />
 
-        <Button
-          // filter has been disable - need to renable after rework
+
+        {/* <Button
+          // filter has been disable - need to re-enable after rework
           onPress={ props.toggleFilter }
-          text=""
-          // icon={ "filter" }
+          text="Filter"
+          icon={ "filter" }
           color={ "grey" }
           fontSize={ moderateScale(14,.2) }
-          width={ moderateScale(140,.2) } 
-          noBorder />
+          width={ moderateScale(140,.2) }
+          noBorder /> */}
       </View>
     )
 }
