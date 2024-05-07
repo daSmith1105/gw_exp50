@@ -1,3 +1,5 @@
+import insertSorted from '../utility/insertSorted';
+
 import {
   SAVE_EVENT,
   GET_DATA_SUCCESS,
@@ -36,20 +38,6 @@ const INITIAL_STATE = {
   online: false
 };
 
-const insertSorted = (arr, obj) => {
-  let sortedArr = [...arr]
-
-  // determine where to insert the new obj based on alphabetically sorted names
-  let index = sortedArr.findIndex( a => a.name.localeCompare(obj.name) > 0)
-  // if obj should be inserted in the end
-  if (index === -1) {
-    index = sortedArr.length
-  }
-
-  sortedArr.splice(index, 0, obj)
-  return sortedArr
-}
-
 export default ( state = INITIAL_STATE, action ) => {
   switch ( action.type ) {
     case REPORT_ERROR_SUCCESS:
@@ -78,7 +66,7 @@ export default ( state = INITIAL_STATE, action ) => {
       let lpnsLo = state.lpns.filter(l => l.id !== '0')
 
       // then insert the new one in a correct position - sorted alphabetically
-      lpnsLo = insertSorted(lpnsLo, {id: '0', name: action.name})
+      lpnsLo = insertSorted(lpnsLo, {id: '0', name: action.name}, 'name')
       return {
         ...state,
         lpns: lpnsLo,
@@ -88,7 +76,7 @@ export default ( state = INITIAL_STATE, action ) => {
       let companiesLo = state.companies.filter(l => l.id !== '0')
 
       // then insert the new one in a correct position - sorted alphabetically
-      companiesLo = insertSorted(companiesLo, {id: '0', name: action.name})
+      companiesLo = insertSorted(companiesLo, {id: '0', name: action.name}, 'name')
       return {
         ...state,
         companies: companiesLo,
@@ -98,7 +86,7 @@ export default ( state = INITIAL_STATE, action ) => {
       let peopleLo = state.people.filter(l => l.id !== '0')
 
       // then insert the new one in a correct position - sorted alphabetically
-      peopleLo = insertSorted(peopleLo, {id: '0', name: action.name})
+      peopleLo = insertSorted(peopleLo, {id: '0', name: action.name}, 'name')
       return {
         ...state,
         people: peopleLo,
@@ -176,7 +164,7 @@ export default ( state = INITIAL_STATE, action ) => {
       let lpnIndex = lpnArr.findIndex( l => l.id === lpn.id )
       if (lpnIndex === -1) {
         if (isNaN(parseInt(lpn.id))) {
-          lpnArr = insertSorted(lpnArr, lpn)
+          lpnArr = insertSorted(lpnArr, lpn, 'name')
         }
       } else {
         lpnArr[lpnIndex].company = company.id
@@ -187,7 +175,7 @@ export default ( state = INITIAL_STATE, action ) => {
       let compIndex = companyArr.findIndex( c => c.id === company.id )
       if (compIndex === -1) {
         if (isNaN(parseInt(company.id))) {
-          companyArr = insertSorted(companyArr, company)
+          companyArr = insertSorted(companyArr, company, 'name')
         }
       }
 
@@ -195,7 +183,7 @@ export default ( state = INITIAL_STATE, action ) => {
       let driverIndex = peopleArr.findIndex( d => d.id === driver.id )
       if (driverIndex === -1) {
         if (isNaN(parseInt(driver.id))) {
-          peopleArr = insertSorted(peopleArr, driver)
+          peopleArr = insertSorted(peopleArr, driver, 'name')
         }
       }
 
@@ -227,7 +215,7 @@ export default ( state = INITIAL_STATE, action ) => {
         const uniqueLocalArr = localArr.filter( lo => !serverArr.find(srv => srv.id === lo.id) )
 
         for (let i = 0; i < uniqueLocalArr.length; i++) {
-          sortedArr = insertSorted(sortedArr, uniqueLocalArr[i])
+          sortedArr = insertSorted(sortedArr, uniqueLocalArr[i], 'name')
         }
         return sortedArr
       }

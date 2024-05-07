@@ -16,16 +16,14 @@ const ListHeader = (props) => {
           fontSize={ moderateScale(14,.2) }
           onPress={ props.hideEventList } />
 
-
-        {/* <Button
-          // filter has been disable - need to re-enable after rework
+        <Button
           onPress={ props.toggleFilter }
           text="Filter"
           icon={ "filter" }
           color={ "grey" }
           fontSize={ moderateScale(14,.2) }
           width={ moderateScale(140,.2) }
-          noBorder /> */}
+          noBorder />
       </View>
     )
 }

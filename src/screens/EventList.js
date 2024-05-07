@@ -4,25 +4,25 @@ import React, {useState,useEffect} from 'react';
 import { View, Text, FlatList} from 'react-native';
 import { useSelector } from 'react-redux';
 import moment from 'moment';
+import axios from 'axios';
 import { moderateScale } from 'react-native-size-matters';
 import ListPagination from '../components/event_list/ListPagination';
 import ListFilter from '../components/event_list/ListFilter';
 import ListHeader from '../components/event_list/ListHeader';
 import ListImageViewer from '../components/event_list/ListImageViewer';
 import ListItem from '../components/event_list/ListItem';
-import today from '../utility/today';
-import sevenDaysAgo from '../utility/sevenDaysAgo';
 import parseName from '../utility/parseName';
-import axios from 'axios';
+import makeId from '../utility/makeId';
+import insertSorted from '../utility/insertSorted';
 import config from '../../backend.json';
 const API_URL = config.backend;
 
 const EventList = (props) => {
-  // used for start /end date search
-  // eventually this should be changed to just get in backend
-  // instead of getting the past 7 days, we should get start from 7 days prior to the last db event - most recent db event
-  const { tYear, tMonth, tDay } = today();
-  const { sdaYear, sdaMonth, sdaDay } = sevenDaysAgo();
+
+  // app state
+  const { siteId } = useSelector(state => state.user);
+  const { webToken } = useSelector(state => state.auth);
+  const { lpns, companies, people, events } = useSelector( state => state.data );
 
   // component state
   const [allEvents, setAllEvents] = useState([]);
@@ -31,156 +31,192 @@ const EventList = (props) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [eventListLoading, setEventListLoading] = useState(false);
   const [eventListError, setEventListError] = useState(false);
+
+  // view image states
   const [showImages, setShowImages] = useState(false);
   const [lpn, setLpn] = useState('');
   const [load, setLoad] = useState('');
-  const [additional, setAdditional] = useState(''); // only displaying lpn and load currently so variable is not being used - but IS being set
+  const [additional, setAdditional] = useState('');
   const [timestamp, setTimestamp] = useState('');
-  const [selectedEventType, setSelectedEventType] = useState(['all']);
-  const [selectedLpn, setSelectedLpn] = useState(['all']);
-  const [selectedCompany, setSelectedCompany] = useState(['all']);
-  const [selectedDriver, setSelectedDriver] = useState(['all']);
-  const [showFilter, setShowFilter] = useState(false);
-  const [startDate, setStartDate] = useState(new Date(sdaYear, sdaMonth, sdaDay));
-  const [endDate, setEndDate] = useState(new Date(tYear, tMonth, tDay));
 
-  // app state
-  // const { userId, firstName, lastName, siteId, customerId, customerName, subscriberId, subscriberName, gateId, gateName } = useSelector(state => state.user);
-  const { siteId } = useSelector(state => state.user);
-  const { webToken } = useSelector(state => state.auth);
-  const { lpns, companies, people, events } = useSelector( state => state.data );
+  // filter states
+  const [showFilter, setShowFilter] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [selectedEventType, setSelectedEventType] = useState(['']);
+  const [selectedLpn, setSelectedLpn] = useState(['']);
+  const [selectedCompany, setSelectedCompany] = useState(['']);
+  const [selectedDriver, setSelectedDriver] = useState(['']);
+  const [selectedStatus, setSelectedStatus] = useState([props.pending ? 1 : '']);
 
   useEffect(() => {
-    setList(1);
+    getList(1, 'initial');
   }, []);
 
-  const setList = async (page, searchParams) => {
+  const getList = async (page, trigger) => {
+    setCurrentPage(page);
+    setShowFilter(false);
     setEventListLoading(true);
     setEventListError(false);
 
-    if (!props.pending) {
-      await getAllEvents(page, searchParams)
+    let offset = 0
+    let limit = 10
+    let getMore = false
+    let pendingData = {events: [], count: 0}
+    let serverData = {events: [], count: 0, error: false}
+    let eventList = []
 
-    } else {
-      let list = []
-      const totalPages = Math.ceil(events.length / 10)
-      const startIndex = (page - 1) * 10
-      const lastIndex = ((page - 1) * 10) + 10
-      const pageEvents = events.slice(startIndex, lastIndex)
+    let searchParams = {
+      // on initial load startDate and endDate are empty and are set based on the timestamp of the latest event on the list
+      // if user did not explicitly filtered the list, then we'll continue showing the default
+      start: trigger === 'filter' && startDate ? formatDate(startDate) : '',
+      end: trigger === 'filter' && endDate ? formatDate(endDate) : '',
+      type: selectedEventType[0],
+      lpn: selectedLpn[0],
+      company: selectedCompany[0],
+      driver: selectedDriver[0],
+      status: selectedStatus[0],
+    }
 
-      // some of these properties are not used, commenting it out, as well as in the API
-      // when this is fully tested, clean it up here and in the API
-      for (let i = 0; i < pageEvents.length; i++) {
-        const ev = pageEvents[i]
-        const driverName = parseName(ev.driverObj.name)
-        const event = {
-          eventId: makeId(10),
-          eventTimestamp: ev.timestamp,
-          typeId: ev.type,
-          // typeName: types[ev.type],
-          // lpnId: ev.lpnObj.id,
-          lpnName: ev.lpnObj.name,
-          // companyId: ev.companyObj.id,
-          companyName: ev.companyObj.name,
-          // personId: ev.driverObj.id,
-          personFirst: driverName.first,
-          personLast: driverName.last,
-          eventPassengerCount: ev.passengerCount,
-          eventComment: ev.comment,
-          eventLpnPhoto: ev.loadPhoto,
-          eventLoadPhoto: ev.loadPhoto,
-          eventImages: ev.additionalPhotos.length > 0 ? ev.additionalPhotos.map(a => a.path).join() : "",
-          // subscriberId: ev.subscriberId,
-          // subscriberName: ev.subscriberId === subscriberId ? subscriberName : '',
-          // customerId: ev.customerId,
-          // customerName: ev.customerId === customerId ? customerName : '',
-          // userId: ev.userId,
-          // userFirst: ev.userId === userId ? firstName : '',
-          // userLast: ev.userId === userId ? lastName : '',
-          // gateId: ev.gateId,
-          // gateName: ev.gateId === gateId ? gateName : '',
-        }
-        list.push(event)
+    if (searchParams.status !== 2) {
+      // get pending events as long as we are not filtering specifically for synced events only (status = 2)
+      pendingData = getPendingEvents(page, searchParams)
+      eventList = pendingData.events
+    }
+
+    if (pendingData.count < (page * limit)) {
+      // we only display 10 events in a page, so determine if we still have slots for server events depending on our current pending events count
+      getMore = true
+
+      // these handles properly getting server events per page
+      offset = Math.max(0, (page * limit) - pendingData.count - limit)
+      limit = Math.min(limit, (page * limit) - pendingData.count)
+    }
+
+    if (searchParams.status !== 1) {
+      // get server events as long as we are not filtering specifically for pending events only (status = 1)
+      serverData = await getServerEvents(offset, limit, searchParams)
+
+      if (serverData.error) {
+        // if there's error in the server, let's bail out
+        setEventListError(true)
+        setCount(0)
+        setPages(0)
+        setAllEvents([])
+        return
       }
 
-      setAllEvents(list);
-      setCount(events.length);
-      setPages(totalPages);
-      setCurrentPage(page);
+      // if we still have slots to show server events, add it in the list
+      if (getMore) {
+        if (eventList.length) {
+          for (let i = 0; i < serverData.events.length; i++) {
+            eventList = insertSorted(eventList, serverData.events[i], 'eventTimestamp', 'desc')
+          }
+        } else {
+          eventList = serverData.events
+        }
+      }
     }
 
-    setEventListLoading(false);
+    if (trigger === 'initial' && eventList[0] && eventList[0].eventTimestamp) {
+      const lastTs = eventList[0].eventTimestamp
+      setStartDate(new Date(moment(lastTs).subtract(7, 'days')))
+      setEndDate(new Date(lastTs))
+    }
+
+    const eventCount = pendingData.count + serverData.count
+    setCount(eventCount)
+    setPages(Math.ceil(eventCount / 10))
+    setAllEvents(eventList)
+    setEventListLoading(false)
   }
 
-  const getAllEvents = async (page, searchParams) => {
-    let id = makeId(4); // id is added to the query so we allways get new data from the server - not 304 data cached
-    let type = ''
-    let lpn = ''
-    let company = ''
-    let driver = ''
-    let start = ''
-    let end = ''
+  const getPendingEvents = (page, searchParams) => {
+    let list = []
+    let count = events.length
+    const limit = 10
+    const startIndex = (page - 1) * limit
+    const lastIndex = page * limit
 
-    if (searchParams) {
-      // list filter is currently unused - review this once we apply list filtering
-      type = searchParams.type !== 'all' ? searchParams.type : ''
-      lpn = searchParams.lpn !== 'all' ? searchParams.lpn : ''
-      company = searchParams.company !== 'all' ? searchParams.company : ''
-      driver = searchParams.driver !== 'all' ? searchParams.driver : ''
-      start = formatDate(searchParams.start);
-      end = formatDate(searchParams.end);
+    let eventList = events.filter(e => {
+      // filter out events that don't fit with the searchParams
+      if (searchParams &&
+          ((searchParams.start && formatDate(e.timestamp) < searchParams.start) ||
+            (searchParams.end && formatDate(e.timestamp) > searchParams.end) ||
+            (searchParams.type && e.type !== searchParams.type) ||
+            (searchParams.lpn && e.lpnObj.id !== searchParams.lpn) ||
+            (searchParams.company && e.companyObj.id !== searchParams.company) ||
+            (searchParams.driver && e.driverObj.id !== searchParams.driver))) {
+        return false
+      }
+      return true
+    })
+    count = eventList.length // do this before slicing so we can get the correct total count that we can paginate
+    eventList = eventList.slice(startIndex, lastIndex)
+
+    for (let i = 0; i < eventList.length; i++) {
+      const ev = eventList[i]
+      const driverName = parseName(ev.driverObj.name)
+      const event = {
+        eventId: 'e' + makeId(10),
+        eventTimestamp: ev.timestamp,
+        typeId: ev.type,
+        lpnName: ev.lpnObj.name,
+        companyName: ev.companyObj.name,
+        personFirst: driverName.first,
+        personLast: driverName.last,
+        eventPassengerCount: ev.passengerCount,
+        eventComment: ev.comment,
+        eventLpnPhoto: ev.loadPhoto,
+        eventLoadPhoto: ev.loadPhoto,
+        eventImages: ev.additionalPhotos.length > 0 ? ev.additionalPhotos.map(a => a.path).join() : "",
+      }
+      list.push(event)
     }
 
-    let p = 1;
-    if(page){ p = page };
+    return {events: list, count}
+  }
 
-    if(siteId){
+  const getServerEvents = async (offset, limit, searchParams) => {
+    let serverData = {events: [], count: 0, error: false}
+    let params = {
+      ...searchParams,
+      offset,
+      limit,
+      i: makeId(4), // id is added to the query so we always get new data from the server - not 304 data cached
+    }
+    let paramsString = new URLSearchParams(params).toString();
+
+    if (siteId) {
       await axios({
         method: 'get',
         headers: {
           'Content-Accept': 'application-json',
           'Authorization': webToken
         },
-        url: `${API_URL}api/mobileeventsbysite/${siteId}/${p}?start=${start}&end=${end}&type=${type}&lpn=${lpn}&company=${company}&driver=${driver}&i=${id}`,
+        url: `${API_URL}api/mobileeventsbysite/${siteId}?${paramsString}`,
         timeout: 15000,
 
       }).then( response => {
-        if(!response || !response.data){
-          throw new Error('error getting event list for gate')
-        };
         let res = response.data;
-        setAllEvents(res.result);
-        setCount(res.count);
-        setPages(res.pages);
-        setCurrentPage(p);
+        serverData.events = res.result
+        serverData.count = res.count
 
       }).catch( (error) => {
         console.log(error)
-        setAllEvents([]);
-        setCount(0);
-        setPages(0);
-        setCurrentPage(0);
-        setEventListError(true);
-      });
+        serverData.error = true
+      })
     }
-  };
 
-  const formatDate = (date, type) => {
+    return serverData
+  }
+
+  const formatDate = (date) => {
     let d = new Date(date);
     let year = d.getFullYear();
     let month = (d.getMonth() + 1).toString().padStart(2, 0)
     let day = (d.getDate()).toString().padStart(2, 0)
     return `${year}-${month}-${day}`;
-  };
-
-  const makeId = (length) => {
-    let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    for ( var i = 0; i < length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    };
-    return result;
   };
 
   const renderItem = ({item}) => {
@@ -208,89 +244,69 @@ const EventList = (props) => {
     setTimestamp('');
   };
 
-  const handleFilterChange = (type, option) => {
+  const handleFilterChange = (type, value) => {
     switch (type) {
+      case 'start':
+        setStartDate(value);
+        break;
+      case 'end':
+        setEndDate(value);
+        break;
       case 'type':
-        setSelectedEventType(option);
+        setSelectedEventType(value);
         break;
       case 'lpn':
-        setSelectedLpn(option);
+        setSelectedLpn(value);
         break;
       case 'company':
-        setSelectedCompany(option);
+        setSelectedCompany(value);
         break;
       case 'driver':
-        setSelectedDriver(option);
+        setSelectedDriver(value);
+        break;
+      case 'status':
+        setSelectedStatus(value);
         break;
       default:
         break;
     };
   };
 
-  const setStart = (event, date) => {
-    const {
-      type,
-      nativeEvent: {timestamp},
-    } = event;
-    setStartDate(new Date(event.nativeEvent.timestamp));
-  };
-
-  const setEnd = (event, date) => {
-    const {
-      type,
-      nativeEvent: {timestamp},
-    } = event;
-    setEndDate(new Date(event.nativeEvent.timestamp));
-  };
-
   const getEventsByFilter = async () => {
     // make sure start date is prior to end date
-    if(startDate > endDate){
-      alert('Start date must be prior to end date');
-      return;
-    };
+    if (startDate > endDate) {
+      return alert('Start date must be prior to end date')
+    }
 
-    let searchParams = {
-      start: startDate,
-      end: endDate,
-      type: selectedEventType[0],
-      lpn: selectedLpn[0],
-      company: selectedCompany[0],
-      driver: selectedDriver[0],
-    };
-
-    await setList(1, searchParams);
+    await getList(1, 'filter');
     setShowFilter(false);
   };
 
   return (
     <View style={styles.containerStyle} >
       <Text style={styles.headingTextStyle}>
-        {props.pending && 'Pending'} Event List {!eventListLoading && !eventListError ? `(${count})` : ''}
+        Event List {!eventListLoading && !eventListError ? `(${count})` : ''}
       </Text>
 
       <ListHeader hideEventList={props.hideEventList} toggleFilter={ () => setShowFilter(!showFilter) } />
 
-      {/* filter disabled above so this code is not currently being called */}
       {showFilter &&
         <ListFilter startDate={startDate}
-                    setStart={setStart}
                     endDate={endDate}
-                    setEnd={setEnd}
                     selectedEventType={selectedEventType}
                     selectedLpn={selectedLpn}
                     selectedCompany={selectedCompany}
                     selectedDriver={selectedDriver}
-                    handleFilterChange={handleFilterChange}
-                    getEventsByFilter={getEventsByFilter}
+                    selectedStatus={selectedStatus}
                     lpns={lpns}
                     companies={companies}
-                    people={people} />
+                    people={people}
+                    handleFilterChange={handleFilterChange}
+                    getEventsByFilter={getEventsByFilter} />
       }
 
-
       {!eventListLoading && !eventListError && !showFilter &&
-          <ListPagination currentPage={currentPage} pages={pages} setList={setList} />
+          <ListPagination currentPage={currentPage} pages={pages} getList={getList} />
       }
 
       {eventListLoading

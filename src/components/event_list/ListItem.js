@@ -9,17 +9,17 @@ const ListItem = (props) => {
     const { item, viewEventImages, allEvents } = props;
 
     return (
-        <TouchableOpacity style={{ ...styles.itemContainerStyle, paddingBottom: item.eventId === allEvents[allEvents.length -1].eventId ? 200 : 3 }}>
-            <Text style={{  ...styles.itemTimestampStyle,
-                            backgroundColor: item.typeId  === 1 ? 'lightgreen'
-                                            : item.typeId  === 2 ? 'lightblue'
-                                            : item.typeId  === 3 ? 'goldenrod'
-                                            : 'red'
-                        }}>
-                { moment(item.eventTimestamp).format('MM-DD-YYYY h:mm a') }
-            </Text>
+        <TouchableOpacity style={{ ...styles.itemContainerStyle, paddingBottom: item.eventId === allEvents[allEvents.length -1].eventId ? 200 : 5 }}>
+            <View style={{  ...styles.itemTimestampStyle,
+                                backgroundColor: item.typeId  === 1 ? 'lightgreen'
+                                                : item.typeId  === 2 ? 'lightblue'
+                                                : item.typeId  === 3 ? 'goldenrod'
+                                                : 'red' }}>
+                <Text>{ moment(item.eventTimestamp).format('MM-DD-YYYY h:mm a') }</Text>
+                {isNaN(parseInt(item.eventId)) && <Text style={styles.pendingIndicator}>&nbsp;</Text>}
+            </View>
 
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingLeft: 10}}>
                 <View style={{ flexDirection: 'column' }}>
                     <Text style={{ fontSize: moderateScale(12,.2) }}>
                         Type: { item.typeId === 1 ? 'IN'
@@ -53,21 +53,28 @@ export default ListItem;
 
 const styles = {
     itemContainerStyle: {
-        paddingLeft: 10,
-        paddingRight: 10,
-        paddingTop: 3,
-        width: '100%',
         backgroundColor: 'white',
         borderColor: 'grey',
         borderWidth: 1,
         borderRadius: 5
       },
       itemTimestampStyle: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 10,
         fontWeight: 'bold',
         paddingLeft: 5,
-        width: '105%',
+        paddingRight: 5,
+        width: '100%',
         borderRadius: 5,
-        marginLeft: -8,
         fontSize: moderateScale(12,.2)
-      }
+      },
+      pendingIndicator: {
+        overflow: 'hidden',
+        borderRadius: 10,
+        backgroundColor: 'gold',
+        width: moderateScale(12,.2),
+        height: moderateScale(12,.2)
+    },
 }
