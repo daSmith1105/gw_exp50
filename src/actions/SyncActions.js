@@ -65,6 +65,7 @@ const validateFilePath = async (fileUri) => {
 const uploadPhotos = async (eventObj, webToken, gateId) => {
   // console.log('uploadPhotos')
   const uploadSinglePhoto = async (formData) => {
+    // console.log('uploadSinglePhoto')
     const result = await axios({
       method: 'POST',
       headers: {
