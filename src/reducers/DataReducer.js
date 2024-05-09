@@ -12,6 +12,7 @@ import {
   SYNC_DATA,
   UPDATE_NETWORK_STATUS,
   SET_ONSITE_COUNT,
+  SET_UPLOADING,
   LOGOUT_USER,
   REPORT_ERROR_SUCCESS,
   RESET_REDUCER_GROUP, // this is used when the app updates to a new version and we need to clear out the entire redux store,
@@ -35,7 +36,8 @@ const INITIAL_STATE = {
   getPeopleError: '',
   onsitePeopleCount: 0,
   onsiteVehicleCount: 0,
-  online: false
+  online: false,
+  uploading: false,
 };
 
 export default ( state = INITIAL_STATE, action ) => {
@@ -235,6 +237,11 @@ export default ( state = INITIAL_STATE, action ) => {
       return {
         ...state
       };
+    case SET_UPLOADING:
+      return {
+        ...state,
+        uploading: action.payload
+      }
     default:
         return state;
   };

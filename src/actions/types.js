@@ -29,6 +29,7 @@ export const HIDE_REPORTS_MODAL = 'HIDE_REPORTS_MODAL';
 export const GET_DATA_SUCCESS = 'GET_DATA_SUCCESS';
 export const GET_DATA_FAIL = 'GET_DATA_FAIL';
 export const SET_ONSITE_COUNT = 'SET_ONSITE_COUNT';
+export const SET_UPLOADING = 'SET_UPLOADING';
 
 // FormActions
 export const CLEAR_FORM = 'CLEAR_FORM';
