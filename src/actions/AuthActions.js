@@ -41,6 +41,11 @@ export const loginUser = ({ email, password }) => {
       if(!user.gateAclId || user.gateAclId !== 3){
         throw new Error("Only guard users may log into this application. Please make sure the user have access of type 'guard' under user setup.")
       };
+
+      if (!user.gateActive) {
+        throw new Error("Gate not active. Please contact your installer.")
+      } 
+
       // get the data we need for startup - lpns, companies, people by customerId
       dispatch(getAppData(user.customerId, 'JWT ' + user.token));
       // log in the user and set user data in state
