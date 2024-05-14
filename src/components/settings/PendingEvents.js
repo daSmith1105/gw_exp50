@@ -8,6 +8,7 @@ import * as actions from '../../actions'
 const PendingEvents = (props) => {
     const dispatch = useDispatch();
 
+    const isLoggedIn = useSelector(state => state.auth.isLoggedIn)
     const online = useSelector(state => state.data.online);
     const lpns = useSelector(state => state.data.lpns);
     const companies = useSelector(state => state.data.companies);
@@ -51,7 +52,7 @@ const PendingEvents = (props) => {
                     </TouchableOpacity>
                 </View>
                 
-                {(events && events.length > 0) &&
+                {(isLoggedIn && online && events && events.length > 0) &&
                     <Button
                         text="Force Upload"
                         onPress={ handleForceUpload }

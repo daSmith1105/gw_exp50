@@ -2,6 +2,7 @@ import * as FileSystem from 'expo-file-system';
 import axios from 'axios';
 import config from '../../backend.json';
 import { SYNC_DATA } from './types';
+import parseName from '../utility/parseName';
 
 const API_URL = config.backend;
 
@@ -181,6 +182,7 @@ export const syncEvent = (webToken, userId, gate, subscriberId, customerId, lpns
     let eventList = [...events]
     const eventObj = eventList.pop() // processing oldest unsynced event
     const gateId = eventObj.gateId ? eventObj.gateId : gate; // if the event was saved without a gateId, attach our current gateId
+    const driverName = parseName(eventObj.driverObj.name)
 
     try {
       // console.log('uploadEvent', eventObj)
@@ -206,8 +208,8 @@ export const syncEvent = (webToken, userId, gate, subscriberId, customerId, lpns
           bTypeId: eventObj.type,
           sLpn: eventObj.lpnObj.name,
           sCompany: eventObj.companyObj.name,
-          sDriverFirst: eventObj.driverObj.name.split(' ')[0],
-          sDriverLast: eventObj.driverObj.name.split(' ')[1] || '',
+          sDriverFirst: driverName.first,
+          sDriverLast: driverName.last,
           bLpnId: eventObj.lpnObj.id && !isNaN(eventObj.lpnObj.id) ? eventObj.lpnObj.id : 0,
           bCompanyId: eventObj.companyObj.id && !isNaN(eventObj.companyObj.id) ? eventObj.companyObj.id : 0,
           bDriverId: eventObj.driverObj.id && !isNaN(eventObj.driverObj.id) ? eventObj.driverObj.id : 0,
