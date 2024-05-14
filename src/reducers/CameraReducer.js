@@ -10,9 +10,6 @@ import {
 } from '../actions/types';
 
 const INITIAL_STATE = {
-  type: 'back',      // this is the default setting for the camera - user cannot change currently
-  ratio: '16:9',     // this is the default ratio for the camera - user cannot change currently
-  autoFocus: true,   // this is the default setting for the camera - user cannot change currently
   flash: 'auto',
   showCamera: false
 };
@@ -21,31 +18,6 @@ export default ( state = INITIAL_STATE, action ) => {
   switch ( action.type ) {
     case RESET_REDUCER_GROUP:
       return {...INITIAL_STATE};
-    case CLEAR_FORM:
-      return {
-        ...state,
-        showCamera: false
-      };
-    case LOGIN_USER_START:
-        return {
-          ...state,
-          showCamera: false
-        };
-    case LOGOUT_USER:
-        return {
-          ...state,
-          showCamera: false
-        };
-    case SHOW_CAMERA:
-      return {
-        ...state,
-        showCamera: true
-      };
-    case SHOW_CAMERA_MODIFIED:
-        return {
-          ...state,
-          showCamera: true
-        };
     case TOGGLE_FLASH:
       if ( state.flash === 'auto' ) {
         return {
@@ -58,6 +30,15 @@ export default ( state = INITIAL_STATE, action ) => {
           flash: 'auto'
         };
       };
+    case SHOW_CAMERA:
+    case SHOW_CAMERA_MODIFIED:
+      return {
+        ...state,
+        showCamera: true
+      };
+    case CLEAR_FORM:
+    case LOGIN_USER_START:
+    case LOGOUT_USER:
     case HIDE_CAMERA:
       return {
         ...state,
