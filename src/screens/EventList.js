@@ -167,7 +167,7 @@ const EventList = (props) => {
         personLast: driverName.last,
         eventPassengerCount: ev.passengerCount,
         eventComment: ev.comment,
-        eventLpnPhoto: ev.loadPhoto,
+        eventLpnPhoto: ev.lpnPhoto,
         eventLoadPhoto: ev.loadPhoto,
         eventImages: ev.additionalPhotos.length > 0 ? ev.additionalPhotos.map(a => a.path).join() : "",
       }
@@ -315,9 +315,9 @@ const EventList = (props) => {
           ? <Text style={styles.statusTextStyle}>Error</Text>
           : !showFilter
             && <FlatList
-                data={ allEvents }
-                renderItem={ renderItem }
-                keyExtractor={(_, index) => index } />
+                  data={ allEvents }
+                  renderItem={ renderItem }
+                  keyExtractor={(_, index) => index } />
       }
 
       { showImages &&
@@ -326,7 +326,7 @@ const EventList = (props) => {
                             additional={additional}
                             timestamp={timestamp}
                             closeShowImage={closeShowImage}
-                            sourcePrefix={props.pending ? '' : API_URL} />
+                            sourcePrefix={lpn.startsWith('file') ? '' : API_URL} />
       }
 
     </View>

@@ -9,25 +9,26 @@ import * as ImagePicker from 'expo-image-picker';
 import toTitleCase from '../../utility/toTitleCase';
 import { FontAwesome } from '@expo/vector-icons';
 import { Spinner } from '../common';
-import { Camera } from 'expo-camera/legacy';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Linking from 'expo-linking'
 import * as actions from '../../actions'
 
-// is camera ref being handled correctly?
-
 const CameraJS = (props) => {
+
     // component state
+    const [cameraRef, setCameraRef] = useState(null)
+    const [cameraReady, setCameraReady] = useState(false)
     const [takingPhoto, setTakingPhoto] = useState(false);
     const [zoom, setZoom] = useState(0);
     const [showPermissionModal, setShowPermissionModal] = useState('');
+
     // app state
     const flash = useSelector(state => state.camera.flash);
-    const ratio = useSelector(state => state.camera.ratio);
-    const type = useSelector(state => state.camera.type);
     const imageType = useSelector(state => state.form.imageType);
     const currentPhoto = useSelector(state => state.form.currentPhoto);
 
     const dispatch = useDispatch();
+    const [permission, requestPermission] = useCameraPermissions()
 
     // run this once on load and cleanup on unmount
     useEffect(() => {
@@ -60,13 +61,11 @@ const CameraJS = (props) => {
 
     const getCameraPermissions = async() => {
         // we should already have this, but if we dont we need to prompt the user again before using the camera
-        const photoStatus  = await Camera.getCameraPermissionsAsync();
-        // returns an object with the status,canAskAgain,expires,granted of the permission
-        if(!photoStatus || photoStatus.status !== 'granted') {
+        if (!permission || !permission.granted) {
             // request the camera permission
-            const requestStatus = await Camera.requestCameraPermissionsAsync();
+            const requestStatus = await requestPermission();
             // returns an object with the status,canAskAgain,expires,granted of the permission
-            if(!requestStatus || requestStatus.status !== 'granted') {
+            if (!requestStatus || !requestStatus.granted) {
                 // we don't have the necessary permissions to take a photo
                 // show a modal to send user to settings to enable camera permissions
                 setShowPermissionModal('camera');
@@ -85,8 +84,8 @@ const CameraJS = (props) => {
                 // we don't have the necessary permissions to select from device image library, bail out
                 // show a modal to send user to settings to enable camera permissions
                 setShowPermissionModal('photos');
+                return false;
             };
-            return false;
         };
 
         return true;
@@ -94,41 +93,27 @@ const CameraJS = (props) => {
 
     const takePicture = async() => {
         setTakingPhoto(true);
-        // is this using ref or what?
-        const photo = await camera.takePictureAsync();
-        Promise.all([photo])
-        .then( async() => {
-            try {
-                const imgResize = await ImageManipulator.manipulateAsync(   photo.uri,
-                                                                            [{resize: { width: 600 } }],
-                                                                            { compress: .5 }
-                                                                        );
-                Promise.all([imgResize])
-                .then ( () => {
-                    if ( currentPhoto && currentPhoto.length > 0 ) {
-                        dispatch(actions.modifyExistingPhoto( currentPhoto, currentPhoto, imgResize.uri ));
-                    } else if( imageType !== 'lpn' && imageType !== 'load' && currentPhoto.length < 1 ) {
-                        dispatch(actions.setPhotoData( imageType, imageType , imgResize.uri ));
-                    } else {
-                       dispatch(actions.setPhotoData( null, imageType , imgResize.uri ));
-                    };
-                    setTakingPhoto(false);
-                    dispatch(actions.hideCamera());
-                })
-            } catch (error) {
-                if ( currentPhoto && currentPhoto.length > 0 ) {
-                    dispatch(actions.modifyExistingPhoto( currentPhoto, currentPhoto, data.uri ));
-                } else if( imageType !== 'lpn' && imageType !== 'load' && currentPhoto.length < 1 ) {
-                    dispatch(actions.setPhotoData( imageType, imageType , data.uri ));
-                } else {
-                    dispatch(actions.setPhotoData( null, imageType , data.uri ));
-                };
-                dispatch(actions.hideCamera());
-            }
-        })
-        .catch( error => {
-            console.log(error)
-        })
+        let photo = await cameraRef.takePictureAsync();
+
+        try {
+            photo = await ImageManipulator.manipulateAsync( photo.uri, [{resize: { width: 600 } }], { compress: .5 } );
+        } catch (error) {
+            console.log('Error resizing an image. Saving original image.')
+        }
+
+        if ( currentPhoto && currentPhoto.length > 0 ) {
+            // modify existing additional photo
+            dispatch(actions.modifyExistingPhoto( currentPhoto, currentPhoto, photo.uri ));
+        } else if ( imageType === 'lpn' || imageType === 'load' ) {
+            // save lpn/load photo - replacing previous one if there is any
+            dispatch(actions.setPhotoData( null, imageType , photo.uri ));
+        } else {
+            // add new additional photo
+            dispatch(actions.setPhotoData( imageType, imageType , photo.uri ));
+        };
+
+        setTakingPhoto(false);
+        dispatch(actions.hideCamera());
     };
 
     const loadImageFromLibrary = async() => {
@@ -144,7 +129,7 @@ const CameraJS = (props) => {
                                                                     quality: .2,
                                                                 });
         // if image picker is canceled, just return
-        if (result.cancelled) {
+        if (result.canceled) {
             return;
         };
 
@@ -203,27 +188,21 @@ const CameraJS = (props) => {
 
     return (
         <PinchGestureHandler onGestureEvent={(event) => changeZoom(event)}>
-            {/* this is expo camera object  */}
-            {/* useCamera2Api is an android option */}
-            <Camera style={styles.cameraStyle}
-                    ref={ ref => camera = ref }
-                    zoom={ zoom }
-                    autoFocus={ true }
-                    focusDepth={ zoom }
-                    ratio={ ratio }
-                    type={ type }
-                    flashMode={ flash }
-                    useCamera2Api={true} >
+            <CameraView
+                    style={styles.cameraStyle}
+                    autofocus={'on'}
+                    facing={'back'}
+                    flash={flash}
+                    zoom={zoom}
+                    onCameraReady={ () => setCameraReady(true) }
+                    ref={ ref => setCameraRef(ref) } >
 
                 <View style={styles.containerStyle}>
 
                     {/* flash selection button */}
-                    <TouchableOpacity onPress={ handleToggleFlash }
-                                      style={ styles.flashStyle } >
+                    <TouchableOpacity onPress={ handleToggleFlash } style={ styles.flashStyle } >
                         <View style={styles.flashContainerStyle}>
-                            <FontAwesome name="flash"
-                                         size={ moderateScale(30, .3) }
-                                         color={ flash === 'auto' ? 'goldenrod' : 'white' } />
+                            <FontAwesome name="flash" size={ moderateScale(30, .3) } color={ flash === 'auto' ? 'goldenrod' : 'white' } />
                             <Text style={{ color: flash === 'auto' ? 'goldenrod' : 'white', marginLeft: scale(4) }}>
                                 { flash }
                             </Text>
@@ -231,13 +210,13 @@ const CameraJS = (props) => {
                     </TouchableOpacity>
 
                     {/* image type heading label  */}
-                    { imageType === 'lpn' || imageType === 'load' ?
-                        <View style={ styles.labelStyle }>
-                            <Text style={ styles.imageTypeText }>{ toTitleCase( imageType + ' photo' ) }</Text>
-                        </View> :
-                        <View style={ styles.labelStyle }>
-                            <Text style={ styles.imageTypeText }>Photo</Text>
-                        </View>
+                    { imageType === 'lpn' || imageType === 'load'
+                        ?   <View style={ styles.labelStyle }>
+                                <Text style={ styles.imageTypeText }>{ toTitleCase( imageType + ' photo' ) }</Text>
+                            </View>
+                        :   <View style={ styles.labelStyle }>
+                                <Text style={ styles.imageTypeText }>Photo</Text>
+                            </View>
                     }
                 </View>
 
@@ -254,65 +233,51 @@ const CameraJS = (props) => {
                 }
 
                 <View style={ styles.bottomRow }>
-
                     {/* Back Button  */}
-                    <TouchableOpacity style={ styles.backContainerStyle }
-                                    onPress={ closeCamera } >
-                        <Text style={ styles.backTextStyle }>
-                            Back
-                        </Text>
+                    <TouchableOpacity style={ styles.backContainerStyle } onPress={ closeCamera } >
+                        <Text style={ styles.backTextStyle }>Back</Text>
                     </TouchableOpacity>
 
                     {/* take picture button */}
-                    { !takingPhoto ?
-                        <TouchableOpacity onPress={ () => takePicture() }
-                                          style={{ padding: scale(5) }} >
-                            <FontAwesome name="camera"
-                                         size={moderateScale(60, .3)}
-                                         color= "white" />
-                        </TouchableOpacity> :
-                        <TouchableOpacity onPress={ () => console.log('taking photo. action unavailable.') }
-                                          style={{ padding: scale(5) }} >
-                            <Text style={{ color: 'goldenrod', fontSize: scale(12) }}>Taking Photo ... </Text>
-                        </TouchableOpacity>
+                    { cameraReady
+                        ? takingPhoto
+                            ?   <TouchableOpacity onPress={ () => console.log('taking photo. action unavailable.') } style={{ padding: scale(5) }} >
+                                    <Text style={{ color: 'goldenrod', fontSize: scale(12) }}>Taking Photo ... </Text>
+                                </TouchableOpacity>
+                            :   <TouchableOpacity onPress={ () => takePicture() } style={{ padding: scale(5) }} >
+                                    <FontAwesome name="camera" size={moderateScale(60, .3)} color= "white" />
+                                </TouchableOpacity>
+                        : null
                     }
 
                     {/* Image selection Button  */}
-                    <TouchableOpacity style={ styles.bottomRowButton }
-                                      onPress={ loadImageFromLibrary } >
-                        <FontAwesome name="image"
-                                     size={moderateScale(30, .3)}
-                                     color="white" />
+                    <TouchableOpacity style={ styles.bottomRowButton } onPress={ loadImageFromLibrary } >
+                        <FontAwesome name="image" size={moderateScale(30, .3)} color="white" />
                     </TouchableOpacity>
-
                 </View>
 
                 {/* show permission modal if we don't have the necessary permissions */}
                 { showPermissionModal && showPermissionModal.length > 0 &&
                     <View style={ styles.modalContainerStyle }>
                         <View style={ styles.modalInnerContainerStyle}>
-                        <Text style={ styles.modalTextStyle }>
-                            {showPermissionModal === 'camera' ?
-                            `GateWatcher needs permission to take photos on this device.` :
-                            `GateWatcher needs permission to select photos from this device.`
-                            }
-                        </Text>
-                        <TouchableOpacity onPress={ navigateToSettings }
-                                          style={ styles.settingsOpenStyle }>
-                            <Text style={ styles.settingsOpenTextStyle }>Open Settings</Text>
-                        </TouchableOpacity>
-                        {/* close this modal */}
-                        <TouchableOpacity onPress={ () => closeSettings(showPermissionModal) }
-                                          style={ styles.closeModalStyle }>
-                            <FontAwesome name="times-circle"
-                                         size={moderateScale(30, .2)}
-                                         color="black" />
-                        </TouchableOpacity>
+                            <Text style={ styles.modalTextStyle }>
+                                {showPermissionModal === 'camera'
+                                    ? `GateWatcher needs permission to take photos on this device.`
+                                    : `GateWatcher needs permission to select photos from this device.`
+                                }
+                            </Text>
+
+                            <TouchableOpacity onPress={ navigateToSettings } style={ styles.settingsOpenStyle }>
+                                <Text style={ styles.settingsOpenTextStyle }>Open Settings</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={ () => closeSettings(showPermissionModal) } style={ styles.closeModalStyle }>
+                                <FontAwesome name="times-circle" size={moderateScale(30, .2)} color="black" />
+                            </TouchableOpacity>
                         </View>
                     </View>
                 }
-
-            </Camera>
+            </CameraView>
 
         </PinchGestureHandler>
     )
