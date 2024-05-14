@@ -152,7 +152,7 @@ const Main = (props) => {
   }
 
   return (
-    <View style={ styles.containerstyle }>
+    <View style={ styles.containerStyle }>
       <GestureDetector gesture={tap}>
         { props.isLoadingComplete ? <IntakeScreen /> : <Loading /> }
       </GestureDetector>

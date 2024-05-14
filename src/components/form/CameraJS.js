@@ -9,7 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import toTitleCase from '../../utility/toTitleCase';
 import { FontAwesome } from '@expo/vector-icons';
 import { Spinner } from '../common';
-import { Camera } from 'expo-camera';
+import { Camera } from 'expo-camera/legacy';
 import * as Linking from 'expo-linking'
 import * as actions from '../../actions'
 
@@ -323,10 +323,11 @@ export default CameraJS;
 const styles = {
     cameraStyle: {
         position: 'absolute',
-        top: 50,
+        top: 30,
         bottom: 0,
         alignItems: 'center',
-        zIndex: 30
+        zIndex: 30,
+        height: '100%',
     },
     containerStyle: {
         flexDirection: 'row'
