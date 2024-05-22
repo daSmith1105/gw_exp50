@@ -7,6 +7,7 @@ import {
   ADD_NEW_LPN,
   ADD_NEW_COMPANY,
   ADD_NEW_DRIVER,
+  ADD_NEW_PASSENGERS,
   CLEAR_EVENT_SAVE_MODAL,
   CLEAR_FORM,
   SYNC_DATA,
@@ -92,6 +93,21 @@ export default ( state = INITIAL_STATE, action ) => {
       return {
         ...state,
         people: peopleLo,
+      }
+    case ADD_NEW_PASSENGERS:
+      let passengerArr = [...state.people]
+
+      // add new names entered from the passenger modal, but exclude duplicates
+      for (let i = 0; i < action.people.length; i++) {
+        const duplicate = passengerArr.find(p => p.id === action.people[i].id)
+        if (!duplicate) {
+          passengerArr = insertSorted(passengerArr, action.people[i], 'name')
+        }
+      }
+
+      return {
+        ...state,
+        people: passengerArr,
       }
     case CLEAR_EVENT_SAVE_MODAL:
       return {
@@ -209,15 +225,14 @@ export default ( state = INITIAL_STATE, action ) => {
         events: action.events,
       }
     case GET_DATA_SUCCESS:
-      // merge data from server and our local values
-      // note that server data is already sorted, so to save resources
-      // we'll cleanup the local data to only have values that are not in our server array, then insert it in the sorted server array
+      // merge data from server (data from different gates of the same customer) to our local values
+      // both server and local values are sorted, but we will prioritize local values and just merge those "new" data from server to our list
       const mergeAndSort = (localArr, serverArr) => {
-        let sortedArr = [...serverArr]
-        const uniqueLocalArr = localArr.filter( lo => !serverArr.find(srv => srv.id === lo.id) )
+        let sortedArr = [...localArr]
+        const toMergeArr = serverArr.filter( lo => !localArr.find(srv => srv.id === lo.id) )
 
-        for (let i = 0; i < uniqueLocalArr.length; i++) {
-          sortedArr = insertSorted(sortedArr, uniqueLocalArr[i], 'name')
+        for (let i = 0; i < toMergeArr.length; i++) {
+          sortedArr = insertSorted(sortedArr, toMergeArr[i], 'name')
         }
         return sortedArr
       }
@@ -225,8 +240,6 @@ export default ( state = INITIAL_STATE, action ) => {
       const combinedL = mergeAndSort([...state.lpns], action.payload.lpns);
       const combinedC = mergeAndSort([...state.companies], action.payload.companies);
       const combinedP = mergeAndSort([...state.people], action.payload.people);
-
-      // console.log('GET_DATA_SUCCESS', {payload: action.payload, statelpns: state.lpns, statecomp: state.companies, statepeople: state.people, combinedL, combinedC, combinedP})
       return {
         ...state,
         lpns: combinedL,
@@ -243,6 +256,6 @@ export default ( state = INITIAL_STATE, action ) => {
         uploading: action.payload
       }
     default:
-        return state;
+        return state
   };
 };

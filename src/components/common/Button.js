@@ -7,48 +7,49 @@ const Button = ( props ) => {
 
   const { onPress,
           hidden,
-          backgroundColor, 
+          backgroundColor,
           noBorder,
-          color, 
-          width, 
-          height, 
-          iconRight, 
-          fontSize, 
-          text, 
-          icon 
+          color,
+          width,
+          height,
+          buttonStyle,
+          iconRight,
+          fontSize,
+          text,
+          icon,
         } = props;
 
 
   return(
-    <TouchableOpacity 
-          onPress={ onPress } 
+    <TouchableOpacity
+          onPress={ onPress }
           style={{ visibility: hidden ? 'hidden' : 'visible' }}>
-      <View style={ [ styles.buttonStyle, 
-                      { backgroundColor: backgroundColor || 'transparent', 
-                        borderColor: noBorder ? 'transparent' : color ? color : 'black', 
-                        width: width || moderateScale(150,.3), 
-                        height: height || 'auto' } ] }>
+      <View style={ [ styles.buttonStyle,
+                      { backgroundColor: backgroundColor || 'transparent',
+                        borderColor: noBorder ? 'transparent' : color ? color : 'black',
+                        width: width || moderateScale(150,.3),
+                        height: height || 'auto' }, buttonStyle ] }>
         { !iconRight &&
             <FontAwesome
               name={ icon }
               size={ moderateScale(20,.2) }
-              color={ color || 'black' } /> 
+              color={ color || 'black' } />
         }
 
         { text &&
-            <Text style={ [ styles.textStyle, 
-                            { color: color || 'black', 
-                              fontSize: fontSize || moderateScale(18,.2), 
+            <Text style={ [ styles.textStyle,
+                            { color: color || 'black',
+                              fontSize: fontSize || moderateScale(18,.2),
                               textAlign: 'center' } ] }>
               { text }
-            </Text> 
+            </Text>
         }
 
         { iconRight &&
             <FontAwesome
               name={ icon }
               size={ moderateScale(20,.2) }
-              color={ color || 'black' } />  
+              color={ color || 'black' } />
         }
 
         {/* this is only used in login screen - just for display purposes */}
