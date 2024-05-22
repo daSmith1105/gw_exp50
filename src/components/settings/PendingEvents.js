@@ -16,22 +16,26 @@ const PendingEvents = (props) => {
     const events = useSelector(state => state.data.events);
     const webToken = useSelector(state => state.auth.webToken);
     const userId = useSelector(state => state.user.userId);
+    const fRequirePhotos = useSelector(state => state.user.fRequirePhotos);
     const customerId = useSelector(state => state.user.customerId);
     const subscriberId = useSelector(state => state.user.subscriberId);
     const gateId = useSelector(state => state.user.gateId);
-    
+
     const handleForceUpload = async () => {
         if (!online) {
             // intentionally allowing user to presss force upload even when they're not logged in so they know what factors are needed for the upload
             alert('No internet connection!')
         }
+
         dispatch(actions.setUploading(true))
         let tempEvents = [...events]
         const length = tempEvents.length
+
         for (let i = 0; i < length; i++) {
-            await dispatch(actions.syncEvent( webToken, userId, gateId, subscriberId, customerId, lpns, companies, people, tempEvents ) );
+            await dispatch(actions.syncEvent( fRequirePhotos, webToken, userId, gateId, subscriberId, customerId, lpns, companies, people, tempEvents ) )
             tempEvents.pop()
         }
+
         await dispatch(actions.getAppData(customerId, webToken))
         dispatch(actions.setUploading(false))
     }
@@ -51,7 +55,7 @@ const PendingEvents = (props) => {
                             size={ moderateScale(40,.2)} />
                     </TouchableOpacity>
                 </View>
-                
+
                 {(isLoggedIn && online && events && events.length > 0) &&
                     <Button
                         text="Force Upload"

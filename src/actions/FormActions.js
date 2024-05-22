@@ -1,9 +1,10 @@
-import { 
-  CLEAR_FORM, 
+import {
+  CLEAR_FORM,
   HANDLE_INPUT_CHANGE,
   ADD_NEW_LPN,
   ADD_NEW_COMPANY,
   ADD_NEW_DRIVER,
+  ADD_NEW_PASSENGERS,
   FORM_INCOMPLETE_ERROR,
   REMOVE_PHOTO_INSTANCE
 } from './types';
@@ -25,21 +26,29 @@ export const handleInputChange = ( name, value ) => {
 export const addNewLpn = ( name ) => {
   return {
     type: ADD_NEW_LPN,
-    name: name.trim()
+    name: name,
   };
 };
 
 export const addNewCompany = ( name ) => {
   return {
     type: ADD_NEW_COMPANY,
-    name: name.trim()
+    name: name,
   };
 };
 
 export const addNewDriver = ( name ) => {
   return {
     type: ADD_NEW_DRIVER,
-    name: name.trim()
+    name: name,
+  };
+};
+
+export const addPassengers = ( people, passengers ) => {
+  return {
+    type: ADD_NEW_PASSENGERS,
+    people,
+    passengers,
   };
 };
 
