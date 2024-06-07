@@ -28,13 +28,15 @@ const Main = (props) => {
   const companies = useSelector(state => state.data.companies);
   const people = useSelector(state => state.data.people);
   const online = useSelector(state => state.data.online);
-  const fRequirePhotos = useSelector(state => state.user.fRequirePhotos)
+  const fUseNames = useSelector(state => state.user.fUseNames)
   const userId = useSelector(state => state.user.userId);
   const customerId = useSelector(state => state.user.customerId);
+  const siteId = useSelector(state => state.user.siteId);
   const gateId = useSelector(state => state.user.gateId);
   const subscriberId = useSelector(state => state.user.subscriberId);
   const webToken = useSelector(state => state.auth.webToken);
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn)
+  const maxSyncRetry = useSelector(state => state.settings.maxSyncRetry)
 
   // dispatch
   const dispatch = useDispatch();
@@ -122,7 +124,7 @@ const Main = (props) => {
     setSyncState(1)
 
     // call sync function - this syncs one event only
-    await dispatch(actions.syncEvent( fRequirePhotos, webToken, userId, gateId, subscriberId, customerId, lpns, companies, people, events ) );
+    await dispatch(actions.syncEvent( maxSyncRetry, fUseNames, webToken, userId, siteId, gateId, subscriberId, customerId, lpns, companies, people, events, false ) );
     // once this finishes, it will be caught by our useEffect for events, and it will be the one to handle resetting sync and refreshing data
   }
 
@@ -155,7 +157,7 @@ const Main = (props) => {
   return (
     <View style={ styles.containerStyle }>
       <GestureDetector gesture={tap}>
-        { props.isLoadingComplete ? <IntakeScreen /> : <Loading /> }
+        { props.isLoadingComplete ? <IntakeScreen resetEventsSyncTime={resetEventsSyncTime} /> : <Loading /> }
       </GestureDetector>
     </View>
   )

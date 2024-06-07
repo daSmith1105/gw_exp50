@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Button } from '../common';
 import { moderateScale } from 'react-native-size-matters';
@@ -7,6 +8,8 @@ import moment from 'moment';
 
 const ListItem = (props) => {
     const { item, viewEventImages, allEvents } = props;
+
+    const maxSyncRetry = useSelector(state => state.settings.maxSyncRetry)
 
     return (
         <TouchableOpacity style={{ ...styles.itemContainerStyle, paddingBottom: item.eventId === allEvents[allEvents.length -1].eventId ? 200 : 5 }}>
@@ -16,7 +19,7 @@ const ListItem = (props) => {
                                                 : item.typeId  === 3 ? 'goldenrod'
                                                 : 'red' }}>
                 <Text>{ moment(item.eventTimestamp).format('MM-DD-YYYY h:mm a') }</Text>
-                {isNaN(parseInt(item.eventId)) && <Text style={{...styles.indicator, backgroundColor: item.error ? 'red' : 'gold'}}>&nbsp;</Text>}
+                {isNaN(parseInt(item.eventId)) && <Text style={{...styles.indicator, backgroundColor: item.failedCount >= maxSyncRetry  ? 'red' : item.error ? 'orange' : 'yellow'}}>&nbsp;</Text>}
             </View>
 
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingLeft: 10}}>

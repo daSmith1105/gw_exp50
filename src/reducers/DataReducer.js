@@ -12,10 +12,12 @@ import {
   CLEAR_FORM,
   SYNC_DATA,
   UPDATE_NETWORK_STATUS,
-  SET_ONSITE_COUNT,
+  SET_ONSITE_LIST_LOADING,
+  SET_ONSITE_LIST,
   SET_UPLOADING,
   LOGOUT_USER,
   REPORT_ERROR_SUCCESS,
+  REPORT_ERROR_FAIL,
   RESET_REDUCER_GROUP, // this is used when the app updates to a new version and we need to clear out the entire redux store,
 } from '../actions/types';
 
@@ -35,6 +37,9 @@ const INITIAL_STATE = {
   getLpnError: '',
   getCompanyError: '',
   getPeopleError: '',
+  onsiteCountLoading: false,
+  onsitePeople: [],
+  onsiteVehicle: [],
   onsitePeopleCount: 0,
   onsiteVehicleCount: 0,
   online: false,
@@ -46,6 +51,7 @@ export default ( state = INITIAL_STATE, action ) => {
     case REPORT_ERROR_SUCCESS:
       return {
         ...state,
+        events: action.events,
         loading: false,
         eventSaving: false,
         saveEventSuccess: false,
@@ -56,6 +62,11 @@ export default ( state = INITIAL_STATE, action ) => {
         getLpnError: '',
         getCompanyError: '',
         getPeopleError: '',
+      }
+    case REPORT_ERROR_FAIL:
+      return {
+        ...state,
+        events: action.events,
       }
     case UPDATE_NETWORK_STATUS:
       return {
@@ -126,33 +137,20 @@ export default ( state = INITIAL_STATE, action ) => {
         uploadEventSuccess: false,
         uploadEventFail: false,
       };
-    case SET_ONSITE_COUNT:
-      // if we have a local count we need to modify it
-      let remainingPeople = 0;
-      let remainingVehicles = 0;
-      // add any current onsite values we have to what was pulled from the network
-      if ( state.events.length > 0 ) {
-        const localE = state.events.slice();
-        localE.forEach( e => {
-          // passengerCount is now stored as int, but for backwards compatibility of existing state, let's parse
-          if( e.type === 1 ) {
-            remainingVehicles++;
-            remainingPeople += parseInt(e.passengerCount) + 1;
-          } else if( e.type === 2 ) {
-            remainingVehicles--;
-            remainingPeople -= parseInt(e.passengerCount) + 1;
-          };
-        });
-      };
-      // add the counts from any local events that have not beemn uploaded to the current db count
-      let peopleCount = remainingPeople + action.peopleCount;
-      let vehicleCount = remainingVehicles + action.vehicleCount;
-
+    case SET_ONSITE_LIST_LOADING:
       return {
         ...state,
-        onsitePeopleCount: peopleCount,
-        onsiteVehicleCount: vehicleCount,
-      };
+        onsiteCountLoading: action.payload,
+      }
+    case SET_ONSITE_LIST:
+      return {
+        ...state,
+        onsiteCountLoading: false,
+        onsitePeople: action.payload.people,
+        onsitePeopleCount: action.payload.peopleCount,
+        onsiteVehicle: action.payload.vehicle,
+        onsiteVehicleCount: action.payload.vehicleCount,
+      }
     case LOGOUT_USER:
       return {
         ...state,
@@ -216,7 +214,6 @@ export default ( state = INITIAL_STATE, action ) => {
         saveEventFail: false,
       };
     case SYNC_DATA:
-      // console.log('SYNC_DATA', action)
       return {
         ...state,
         lpns: action.lpns,
@@ -229,7 +226,7 @@ export default ( state = INITIAL_STATE, action ) => {
       // both server and local values are sorted, but we will prioritize local values and just merge those "new" data from server to our list
       const mergeAndSort = (localArr, serverArr) => {
         let sortedArr = [...localArr]
-        const toMergeArr = serverArr.filter( lo => !localArr.find(srv => srv.id === lo.id) )
+        const toMergeArr = serverArr.filter( srv => !localArr.find(lo => lo.name === srv.name) )
 
         for (let i = 0; i < toMergeArr.length; i++) {
           sortedArr = insertSorted(sortedArr, toMergeArr[i], 'name')

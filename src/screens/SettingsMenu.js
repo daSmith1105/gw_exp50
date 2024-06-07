@@ -12,30 +12,28 @@ import OnsiteCount from '../components/settings/OnsiteCount';
 import LoginButton from '../components/settings/LoginButton';
 import { moderateScale } from 'react-native-size-matters';
 import EventList from './EventList';
+import OnsiteList from './OnsiteList';
 import * as actions from '../actions';
 
 const SettingsMenu = ( props ) => {
   // app state
-  const { siteId, userId, gateId } = useSelector(state => state.user);
+  const { siteId, userId, fUseNames } = useSelector(state => state.user);
   const { webToken, isLoggedIn } = useSelector(state => state.auth);
   const { sendingReport } = useSelector(state => state.settings);
-  const { uploading } = useSelector(state => state.data);
+  const { uploading, events, people } = useSelector(state => state.data);
 
   // component state
   const [showReportSendConfirmation, setShowReportSendConfirmation] = useState(false);
+  const [showPeopleList, setShowPeopleList] = useState(false);
+  const [showVehicleList, setShowVehicleList] = useState(false);
   const [showPendingEventList, setShowPendingEventList] = useState(false);
   const [showEventList, setShowEventList] = useState(false);
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // run once on mount
-    if (gateId && parseInt(gateId) !== 0) {
-      dispatch(actions.getOnsiteCountBySite(siteId, webToken));
-    } else {
-      dispatch(actions.setOnsiteCountByLocalEvents());
-    }
-  }, []);
+      dispatch(actions.getOnsiteList(siteId, webToken, events, people, fUseNames))
+  }, [events.length])
 
   const hideEventList = () => {
     setShowPendingEventList(false)
@@ -58,20 +56,31 @@ const SettingsMenu = ( props ) => {
     dispatch(actions.logoutUser(userId, 'logging out with this device'));
   };
 
+  const showOnsiteList = (type) => {
+    setShowPeopleList(false)
+    setShowVehicleList(false)
+
+    if (type === 'people') {
+      setShowPeopleList(true)
+    } else if (type === 'vehicle') {
+      setShowVehicleList(true)
+    }
+  }
+
   return (
     <View style={ styles.containerStyle }>
-      { uploading && 
+      { uploading &&
         <View style={styles.loadingContainerStyle}>
           <Text style={styles.loadingText}>Uploading pending events</Text>
           <View style={{height: '20%'}}><Loading /></View>
         </View>
       }
 
-      <View style={ styles.listStyle }>      
+      <View style={ styles.listStyle }>
         <SettingsHeader />
         <NetworkStatus />
-        <OnsiteCount />
-        <PendingEvents setShowPendingEventList={setShowPendingEventList} />
+        <OnsiteCount showOnsiteList={showOnsiteList} />
+        <PendingEvents setShowPendingEventList={setShowPendingEventList} resetEventsSyncTime={props.resetEventsSyncTime} />
 
         { !isLoggedIn
           ? <LoginButton />
@@ -120,14 +129,15 @@ const SettingsMenu = ( props ) => {
             color='grey'
             icon={ 'arrow-circle-left' }
             width={ moderateScale(40,.2) }
-            fontSize={ moderateScale(20,.2) }
             onPress={ () => { dispatch(actions.toggleSettingsMenu()) } } />
         </View>
 
       </View>
 
-      { showPendingEventList && <EventList  hideEventList={hideEventList} pending={true} /> }
-      { showEventList && <EventList  hideEventList={hideEventList} pending={false} /> }
+      { showPeopleList && <OnsiteList showOnsiteList={showOnsiteList} type={'people'} /> }
+      { showVehicleList && <OnsiteList showOnsiteList={showOnsiteList} type={'vehicle'} /> }
+      { showPendingEventList && <EventList hideEventList={hideEventList} pending={true} /> }
+      { showEventList && <EventList hideEventList={hideEventList} pending={false} /> }
 
       { !sendingReport && showReportSendConfirmation &&
         <ErrorReporting  onAbort={clearErrorReportConfirmationModal} setShowReportSendConfirmation={setShowReportSendConfirmation} />
@@ -146,7 +156,7 @@ const styles = {
   containerStyle: {
     flex: 1,
     position: 'absolute',
-    top: 50,
+    top: 30,
     left: 0,
     width: '100%',
     height: Dimensions.get('window').height - 50,
@@ -154,16 +164,16 @@ const styles = {
     zIndex: 32,
   },
   loadingContainerStyle: {
-    width: '100%', 
+    width: '100%',
     height: '100%',
-    position: 'absolute', 
+    position: 'absolute',
     zIndex: 1000,
     alignItems: 'center',
     backgroundColor: 'white',
   },
   loadingText: {
-    fontSize: moderateScale(20,.2), 
-    fontWeight: 'bold', 
+    fontSize: moderateScale(20,.2),
+    fontWeight: 'bold',
     marginTop: '50%',
   },
   listStyle: {

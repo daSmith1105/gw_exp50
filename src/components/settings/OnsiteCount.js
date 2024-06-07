@@ -1,48 +1,43 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
 import { moderateScale, scale } from 'react-native-size-matters';
-import { RowSection } from '../common';
-
-// get this on initial load of setting screen - have attempted to fix, but as of yet, no luck
-// only happens once, then when returning to setttings screen it is fine
-
-// Selector unknown returned a different result when called with the same parameters. This can lead to unnecessary rerenders.
-// Selectors that return a new reference (such as an object or an array) should be memoized: 
-// https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization {"selected": NaN, "selected2": NaN, "stack": "Error
-
+import { RowSection, Spinner } from '../common';
 
 const OnsiteCount = ( props ) => {
   // app state
-  const onsitePeopleCount = useSelector(state => state.data.onsitePeopleCount || 0);
-  const onsiteVehicleCount = useSelector(state => state.data.onsiteVehicleCount || 0);
-    
+  const { onsiteCountLoading, onsitePeopleCount, onsiteVehicleCount } = useSelector(state => state.data)
+
     return (
       <RowSection>
         <View style={ styles.containerStyle }>
-          <Text style={{ fontSize: moderateScale(18,.2) }}>Onsite Count</Text>
+          <Text style={{ fontSize: props.headerSize ? props.headerSize : moderateScale(18,.2) }}>Onsite Count</Text>
           <View style={ styles.labelContainerStyle }>
             <Text style={{ fontSize: moderateScale(14,.2) }}>People</Text>
             <Text style={{ fontSize: moderateScale(14,.2) }}>Vehicles</Text>
           </View>
           <View style={ styles.dataStyle }>
-            <View style={ styles.dataContainerStyle }>
-                <Text style={{ fontSize: moderateScale(16,.2) }}>
-                  { onsitePeopleCount ? 
-                      onsitePeopleCount : 
-                      0 
-                  }
-                </Text> 
-            </View>
-            <View style={ styles.dataContainerStyle }>
-                <Text style={{ fontSize: moderateScale(16,.2) }}>
-                  { onsiteVehicleCount ? 
-                      onsiteVehicleCount : 
-                      0 
-                  }
-                </Text>
-            </View>
-          </View> 
+            <TouchableOpacity onPress={() => props.showOnsiteList('people')} disabled={onsitePeopleCount ? false : true}>
+              <View style={{ ...styles.dataContainerStyle, backgroundColor: props.currentList === 'people' ? 'goldenrod' : 'lightgrey' }}>
+                {onsiteCountLoading
+                  ? <Spinner color={'grey'}/>
+                  : <Text style={{ fontSize: moderateScale(16,.2) }}>
+                      {onsitePeopleCount ? onsitePeopleCount : 0}
+                    </Text>
+                }
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => props.showOnsiteList('vehicle')} disabled={onsiteVehicleCount ? false : true}>
+              <View style={{ ...styles.dataContainerStyle, backgroundColor: props.currentList === 'vehicle' ? 'goldenrod' : 'lightgrey' }}>
+                {onsiteCountLoading
+                  ? <Spinner color={'grey'}/>
+                  : <Text style={{ fontSize: moderateScale(16,.2) }}>
+                      {onsiteVehicleCount ? onsiteVehicleCount : 0}
+                    </Text>
+                }
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
       </RowSection>
     )
@@ -56,25 +51,24 @@ const styles = {
     width: '100%',
     alignItems: 'center'
   },
+  labelContainerStyle: {
+    width: moderateScale(300,.2),
+    flexDirection: 'row',
+    justifyContent: 'space-around'
+  },
   dataContainerStyle: {
     height: moderateScale(65,.4),
     width: moderateScale(65,.4),
     backgroundColor: 'lightgrey',
-    padding: scale(10),
     borderRadius: 5,
     justifyContent: 'center',
-    alignItems: 'center'
-  },
-  labelContainerStyle: {
-    width: moderateScale(300,.2), 
-    flexDirection: 'row', 
-    justifyContent: 'space-around' 
+    alignItems: 'center',
   },
   dataStyle: {
-    width: moderateScale(300,.2), 
+    width: moderateScale(300,.2),
     flexDirection: 'row',
-    justifyContent: 'space-around', 
-    marginTop: scale(8), 
-    marginBottom: scale(5)
+    justifyContent: 'space-around',
+    marginTop: scale(8),
+    marginBottom: scale(5),
   }
 };

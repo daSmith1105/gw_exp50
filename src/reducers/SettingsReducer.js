@@ -15,7 +15,8 @@ const INITIAL_STATE = {
   showLoginScreen: false,
   reportErrorFail: false,
   reportErrorSuccess: false,
-  sendingReport: false
+  sendingReport: false,
+  maxSyncRetry: 3,
 };
 
 export default ( state = INITIAL_STATE, action ) => {

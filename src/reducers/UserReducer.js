@@ -22,7 +22,7 @@ const INITIAL_STATE = {
   siteId: '',
   siteName: '',
   fRequirePhotos: true,
-  fRequireNames: true,
+  fUseNames: true,
 };
 
 export default ( state = INITIAL_STATE, action ) => {
@@ -46,7 +46,7 @@ export default ( state = INITIAL_STATE, action ) => {
         siteId: user.siteId,
         siteName: user.siteName,
         fRequirePhotos: user.fRequirePhotos === 1 ? true : false,
-        fRequireNames: user.fRequireNames === 1 ? true : false,
+        fUseNames: user.fUseNames === 1 ? true : false,
       }
     // i dont think this is being used anywhere - cleanup in future
     case GET_ASSIGNMENT_DATA_SUCCESS :

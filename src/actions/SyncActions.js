@@ -9,8 +9,6 @@ const API_URL = config.backend;
 
 // if sync failed, let's remove images that were stored in the server
 const removeImagesFromServer = async (lpnPhotoDbPath, loadPhotoDbPath, additionalPhotosDbPaths, webToken) => {
-  // console.log('removeImagesFromServer')
-
   const rollbackImage = async (path) => {
     if (!path) return
     await axios({
@@ -32,8 +30,6 @@ const removeImagesFromServer = async (lpnPhotoDbPath, loadPhotoDbPath, additiona
 
 // if sync was successful, remove the images from the device cache
 const removeImagesFromDevice = async (lpnPhoto, loadPhoto, additionalPhotos) => {
-  // console.log('removeImageFromDevice')
-
   const rollbackImage = async (fileUri) => {
     if (fileUri) {
       const file = await FileSystem.getInfoAsync(fileUri);
@@ -58,15 +54,13 @@ const removeImagesFromDevice = async (lpnPhoto, loadPhoto, additionalPhotos) => 
 // so make sure there is a file on the device at the specified fileUri
 const validateFilePath = async (fileUri) => {
   const file = await FileSystem.getInfoAsync(fileUri);
-  // console.log('validateFilePath', fileUri, file)
   return file.exists
 };
 
 // handle upload lpn, load, and additional photos so we have the file path ready once we sync the event data
-const uploadPhotos = async (fRequirePhotos, eventObj, webToken, gateId) => {
-  // console.log('uploadPhotos')
+const uploadPhotos = async (eventObj, webToken, gateId) => {
+
   const uploadSinglePhoto = async (formData) => {
-    // console.log('uploadSinglePhoto')
     const result = await axios({
       method: 'POST',
       headers: {
@@ -82,7 +76,7 @@ const uploadPhotos = async (fRequirePhotos, eventObj, webToken, gateId) => {
       return res.data.path
     }).catch( (error) => {
       console.log('Uploading photos error:', error)
-      return false;
+      return '';
     })
     return result
   }
@@ -140,18 +134,12 @@ const uploadPhotos = async (fRequirePhotos, eventObj, webToken, gateId) => {
     };
   }
 
-  // if lpn or load photos fail, revert and bail out
-  // since additional photos are optional, let's not bail out for it if it fails
-  if (fRequirePhotos && (!lpnPhotoDbPath || !loadPhotoDbPath)) {
-    await removeImagesFromServer(lpnPhotoDbPath, loadPhotoDbPath, additionalPhotosDbPaths, webToken)
-  }
   return [lpnPhotoDbPath, loadPhotoDbPath, additionalPhotosDbPaths]
 }
 
 // update our local list with orresponding ids from database
 const updateLocalIds = (lpnList, companyList, peopleList, eventList, eventObj, dbIds) => {
   const personIds = [...dbIds.passengerIds, {old: eventObj.driverObj.id, new: dbIds.personId}]
-  // console.log('updateLocalIds', {lpnList, companyList, peopleList, eventList, eventObj, dbIds, personIds})
 
   // update our local lpn list with the ids from database
   // note that we should not be changing associations here in sync, we will simply find and replace
@@ -209,24 +197,16 @@ const updateLocalIds = (lpnList, companyList, peopleList, eventList, eventObj, d
 // this syncs one event at a time as such, we aim to make it as lightweight as possible
 // so for each iteration of an event in the pending list, we will only do what's necessary (sync a local event to server - still making sure of data integrity and no duplicates)
 // and handle other functionalities outside the iteration (getting updated list)
-export const syncEvent = (fRequirePhotos, webToken, userId, gate, subscriberId, customerId, lpns, companies, people, events) => {
-  // console.log('syncEvent action start', {webToken, userId, gate, subscriberId, customerId, lpns, companies, people, events})
+export const syncEvent = (maxSyncRetry, fUseNames, webToken, userId, siteId, gate, subscriberId, customerId, lpns, companies, people, events, priorityEventIndex) => {
+  // console.log('syncEvent action start', {maxSyncRetry, fUseNames, webToken, userId, siteId, gate, subscriberId, customerId, lpns, companies, people, events, priorityEventIndex})
 
   // upload one event at a time - start from the very first not synced event
-    // upload photos - this is separate API if lpn/load photos fail, bail out
+    // upload photos - this is separate API
     // upload event - check if lpn/company/people already exists, if yes - update that data in db, and use that id - wrap this in a transaction
       // this is all done in the backend, what gets returned is only fail or success (with eventId, lpnid, company id, people id)
       // note that lpn-company-people are all tied up - so don't partially upload lpn/company/people
-      // if fail - revert the photos and console log
-        // should we remove the lpn/company/people for this event in the state?
-          // no - keep it in case other events are using it
-          // how do we clean up the select list for values that were not synced?
-            // wil not clean it up so they can continue to use it to prepopulate the form until another event it's linked to gets uploaded
-      // success - remove lpn/company/people from our state - then getAppData will handle refilling our select-list states with updated data from db this will also ensure no duplicates
-        // what if on the next event we are using the same lpn/company/people
-          // 'events' state has its own lpn/company/people object data which can be used by the backend
-            //  the backend should be able to handle existing lpn/company/people - check sName
-      // always remove the event that we are currently processing in our state - whether success/fail
+      // on error, generate a report and have the report parsed automatically as a means of sync backup
+        // when a report has been successfully created, regardless if it has been parsed, then remove the local event to avoid duplicates
     // if there's still events to be synced - repeat the process
       // should we not call getAppData after this one sync?
         // i'm trying to make the sync as lightweight as possible - so only call getAppData if we're done/pausing events sync
@@ -235,40 +215,72 @@ export const syncEvent = (fRequirePhotos, webToken, userId, gate, subscriberId, 
 
   return async( dispatch ) => {
     const types = {1: "IN", 2: "OUT", 3: "DENIED", 4: "ACCIDENT" }
+    let reported = false
+
     let lpnList = [...lpns]
     let companyList = [...companies]
     let peopleList = [...people]
     let eventList = [...events]
 
-    // processing oldest unsynced event that did not previously had error
-    const eventObj = [...events].filter(e => !e.error).reverse()[0]
-    const eventIndex = eventList.findIndex(e => e.timestamp === eventObj.timestamp)
+    // determine which event shall we sync
+    // if it's normal interval, then sync oldest one that hasn't reached max sync retry
+    //    this ensures we try our best to keep events uploaded chronologically, and the limit ensures we don't get stuck on this first event that keeps on failing - forever
+    // force upload (priorityEventIndex provided), the caller decides which event to sync,
+    //    basically it just loops thru all pending events regardless if it has reached the limit, and process them in one pass only
+    //      if there are still pending events after a force upload, user can then report error as last resort
+
+    let eventObj = (priorityEventIndex !== false) ? eventList[priorityEventIndex] : [...events].filter(e => e.failedCount < maxSyncRetry).reverse()[0]
     if (!eventObj) {
-      // if we're here, all local events have been tried to sync before and failed
-      // are we gonna retry the oldest one and re-sync? note that when it first failed, we created a report for it
-      // there's a report parsing in the backend that turns it into GateEvent entry, so not sure if re-syncing this will create a duplicate entry once report is parsed
-      // for now, to be confirmed - so abort!
-      console.log('Aborting sync, all local events have previously failed syncing and has been reported.')
-      return
+      // if we're here, all local events have reached max sync retry
+      if (!eventObj) {
+        console.log('Aborting sync. All pending events have reached maximum failed sync attempt.')
+        return
+      }
     }
-    // console.log('uploadEvent', eventIndex, eventObj)
+    const eventIndex = (priorityEventIndex !== false) ? priorityEventIndex : eventList.findIndex(e => e.id === eventObj.id)
+    const driverName = parseName(eventObj.driverObj.name)
 
     // if event was saved while not logged in, use current user's data to fill in the empty values
     const usrId = eventObj.userId ? eventObj.userId : userId
     const gateId = eventObj.gateId ? eventObj.gateId : gate
     const subId = eventObj.subscriberId ? eventObj.subscriberId : subscriberId
     const custId = eventObj.customerId ? eventObj.customerId : customerId
+    const stId = eventObj.siteId ? eventObj.siteId : siteId
+
+    // initializing event data so it can be used in error reporting when sync fails
+    let eventData = {
+      timestamp: eventObj.timestamp,
+      bSubscriberId: subId,
+      bCustomerId: custId,
+      bUserId: usrId,
+      bGateId: gateId,
+      bSiteId: stId,
+      bTypeId: eventObj.type,
+      sLpn: eventObj.lpnObj.name,
+      sCompany: eventObj.companyObj.name,
+      sDriverFirst: driverName.first,
+      sDriverLast: driverName.last,
+      passengers: [],
+      passengerCount: fUseNames ? 0 : eventObj.passengerCount, // to ensure data consistency, we will initialize this with 0 if names are required, and the value will be updated when we also already have our passenger names
+      sLpnPhoto: '',
+      sLoadPhoto: '',
+      images: '',
+      sComment: eventObj.comment,
+      fUseNames: fUseNames,
+    }
 
     try {
-      const driverName = parseName(eventObj.driverObj.name)
-      let passengers = []
-      if (eventObj.passengers) {
-        passengers = people.filter(p => eventObj.passengers.includes(p.id)).map(p => { return {...parseName(p.name), id: p.id}})
+      if (fUseNames && eventObj.passengers) {
+        eventData.passengers = people.filter(p => eventObj.passengers.includes(p.id)).map(p => { return {...parseName(p.name), id: p.id}})
+        eventData.passengerCount = eventData.passengers.length
       }
 
-      // upload photos
-      const [lpnPhotoDbPath, loadPhotoDbPath, additionalPhotosDbPaths] = await uploadPhotos(fRequirePhotos, eventObj, webToken, gateId)
-      if (fRequirePhotos && (!lpnPhotoDbPath || !loadPhotoDbPath)) throw new Error('Error uploading photos.')
+      // upload photos - if for some reason the photo uploads fail, let's continue
+      // anyway, if we mark it as failed and send a report, the report still does not have photos - so no benefit in sending a report, better benefit in syncing it near realtime
+      const [lpnPhotoDbPath, loadPhotoDbPath, additionalPhotosDbPaths] = await uploadPhotos(eventObj, webToken, gateId)
+      eventData.sLpnPhoto = lpnPhotoDbPath
+      eventData.sLoadPhoto = loadPhotoDbPath
+      eventData.images = additionalPhotosDbPaths.length > 0 ? additionalPhotosDbPaths.join() : ''
 
       // upload event
       await axios({
@@ -276,26 +288,9 @@ export const syncEvent = (fRequirePhotos, webToken, userId, gate, subscriberId, 
         headers: {
           'Authorization': webToken
         },
-        url: API_URL + 'api/gateeventV4',
-        data: {
-          timestamp: eventObj.timestamp,
-          bSubscriberId: subId,
-          bCustomerId: custId,
-          bUserId: usrId,
-          bGateId: gateId,
-          bTypeId: eventObj.type,
-          sLpn: eventObj.lpnObj.name,
-          sCompany: eventObj.companyObj.name,
-          sDriverFirst: driverName.first,
-          sDriverLast: driverName.last,
-          sLpnPhoto: lpnPhotoDbPath,                                                          // Optional - based on gate settings
-          sLoadPhoto: loadPhotoDbPath,                                                        // Optional - based on gate settings
-          images: additionalPhotosDbPaths.length > 0 ? additionalPhotosDbPaths.join() : '',   // Optional
-          sComment: eventObj.comment,                                                         // Optional
-          passengerCount: eventObj.passengerCount,                                            // Optional
-          passengers: passengers,                                                             // Optional - based on gate settings
-        },
-        timeout: 8000,
+        url: API_URL + 'api/gateevent',
+        data: eventData,
+        timeout: 20000,
 
       }).then( async (response) => {
         console.log(`${eventObj.timestamp} | (${eventObj.lpnObj.name} - ${types[eventObj.type]}) - event uploaded successfully!`)
@@ -311,11 +306,10 @@ export const syncEvent = (fRequirePhotos, webToken, userId, gate, subscriberId, 
         await removeImagesFromDevice(eventObj.lpnPhoto, eventObj.loadPhoto, eventObj.additionalPhotos, webToken)
 
       }).catch( async (error) => {
-        // console.log(error.message) // to see internal error message
-
         // rollback images saved to server if they were already uploaded and we bombed out
         await removeImagesFromServer(lpnPhotoDbPath, loadPhotoDbPath, additionalPhotosDbPaths, webToken)
-        throw new Error('Error uploading event.')
+        const message = (error.response && error.response.data && error.response.data.error) ? error.response.data.error : error.message ? error.message : 'Error uploading event.'
+        throw new Error(message)
       })
 
     } catch (error) {
@@ -324,21 +318,27 @@ export const syncEvent = (fRequirePhotos, webToken, userId, gate, subscriberId, 
       console.log('The sync function encountered an error.', error.message)
 
       if (eventList[eventIndex]) {
+        reported = true
         // if we got an error before/during API call, let's report it
-        eventList[eventIndex].error = error.message
-        dispatch(reportError(webToken, error.message, subId, custId, userId, gateId, JSON.stringify([eventObj])))
+        // error message should be as specific/detailed as possible so it will be easier for us to debug and clear out what's causing this sync to fail
+        // reportError will be responsible for updating our events state depending on when it fails/succeed
+        eventList[eventIndex].failedCount++
+        eventList[eventIndex].error = eventData.error = error.message
+        await dispatch(reportError(fUseNames, webToken, `Sync failed: ${error.message}`, subId, custId, stId, userId, gateId, peopleList, [eventData], eventList, eventObj.id))
       }
 
-      // if error happened after API call (somewhere in the promise "then"), then no need to report, it's already in the server
-      // we might end up with dangling data, but that's bearable for now, what's important is we don't loose any data
+      // if error happened after API call (somewhere in the axios "then"), then no need to report, it's already in the server
+      // we might end up with dangling lpn/company/people due to id mismatch, but that's bearable, what's important are the lpn/company/people names and that we don't loose any data
     }
 
-    dispatch ({
-      type: SYNC_DATA,
-      lpns: lpnList,
-      companies: companyList,
-      people: peopleList,
-      events: eventList,
-    });
+    if (!reported) {
+      dispatch ({
+        type: SYNC_DATA,
+        lpns: lpnList,
+        companies: companyList,
+        people: peopleList,
+        events: eventList,
+      });
+    }
   }
 }

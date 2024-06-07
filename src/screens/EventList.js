@@ -170,7 +170,7 @@ const EventList = (props) => {
       const ev = eventList[i]
       const driverName = parseName(ev.driverObj.name)
       const event = {
-        eventId: 'e' + makeId(10),
+        eventId: ev.id,
         eventTimestamp: ev.timestamp,
         typeId: ev.type,
         lpnName: ev.lpnObj.name,
@@ -184,6 +184,7 @@ const EventList = (props) => {
         eventLoadPhoto: ev.loadPhoto,
         eventImages: ev.additionalPhotos.length > 0 ? ev.additionalPhotos.map(a => a.path).join() : "",
         error: ev.error,
+        failedCount: ev.failedCount,
       }
       list.push(event)
     }
