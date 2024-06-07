@@ -23,7 +23,7 @@ const IntakeScreen = props => {
   const showCamera = useSelector(state => state.camera.showCamera);
   const showAddComment = useSelector(state => state.modal.showAddComment);
   const showAddPassenger = useSelector(state => state.modal.showAddPassenger);
-  const fRequireNames = useSelector(state => state.user.fRequireNames);
+  const fUseNames = useSelector(state => state.user.fUseNames);
 
   useKeepAwake();
 
@@ -39,7 +39,7 @@ const IntakeScreen = props => {
             <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ?
                             styles.addPassengerIOS :
                             styles.addPassengerAndroid }>
-              {fRequireNames ? <AddPassengers /> : <AddPassengerCount />}
+              {fUseNames ? <AddPassengers /> : <AddPassengerCount />}
             </View>
         }
 
@@ -57,7 +57,7 @@ const IntakeScreen = props => {
             <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ?
                             styles.settingsMenuIOS :
                             styles.settingsMenuAndroid }>
-              <SettingsMenu />
+              <SettingsMenu resetEventsSyncTime={props.resetEventsSyncTime} />
             </View>
         }
 

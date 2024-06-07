@@ -12,7 +12,7 @@ import * as actions from '../../actions';
 const IntakeForm = (props) => {
     // app state
     const {lpns, companies, people, saveEventFail, saveEventSuccess, eventSaving} = useSelector(state => state.data);
-    const {userId, customerId, gateId, subscriberId, fRequirePhotos} = useSelector(state => state.user);
+    const {userId, customerId, siteId, gateId, subscriberId, fRequirePhotos} = useSelector(state => state.user);
     const {selectedEventType,
            selectedLpn,
            selectedCompany,
@@ -152,7 +152,7 @@ const IntakeForm = (props) => {
         }
 
         // check if name has at least 2 words
-        if (name.split(' ').length < 2) {            
+        if (name.split(' ').length < 2) {
             msg = lpnChange ? 'The associated driver for this LPN has incomplete name.' : ''
             alert(`${msg} Please provide driver's first and last name.`)
             return false
@@ -171,7 +171,7 @@ const IntakeForm = (props) => {
                     setSaving(false)
                     return;
                 };
-                
+
                 setEventInState();
             } else {
                 dispatch(actions.submitFormError());
@@ -213,11 +213,13 @@ const IntakeForm = (props) => {
         const now = YYYY + '-' + MM + '-' + DD + ' ' + hh + ':' + mm + ':' + ss;
 
         const event = {
+            id: 'e-' + makeId(9),
             timestamp: now,
             type: selectedEventType[0],
             userId: userId || '',              // if not logged in there will be no userId
             subscriberId: subscriberId || '',  // if not logged in there will be no subscriberId
             customerId: customerId || '',      // if not logged in there will be no customerId
+            siteId: siteId || '',              // if not logged in there will be no siteId
             gateId: gateId || '',              // if not logged in there will be no gateId OR the user that is logged in does not have a valid gate assignment for some reason
             lpnObj: lpnObj,
             companyObj: companyObj,
@@ -227,7 +229,8 @@ const IntakeForm = (props) => {
             additionalPhotos: additionalPhotos.length > 0 ?  additionalPhotos : [],
             passengerCount: passengerCount || 0,
             passengers: passengers,
-            comment: comment
+            comment: comment,
+            failedCount: 0,
         };
 
         dispatch(actions.saveEvent( event ));
@@ -396,13 +399,15 @@ const IntakeForm = (props) => {
 
                     {/* Toggle Adding New Photo */}
                     { (!maxPhotosReached && fRequirePhotos) &&
-                        <Button
-                            onPress={ () => { dispatch(actions.showCamera( makeId(4), null )) }  }
-                            text="Photo"
-                            icon={ "plus-circle" }
-                            color={ "grey" }
-                            fontSize={ moderateScale(14,.2) }
-                            width={ moderateScale(120,.2) } />
+                        <View style={{alignItems: 'flex-start'}}>
+                            <Button
+                                onPress={ () => { dispatch(actions.showCamera( makeId(4), null )) }  }
+                                text="Photo"
+                                icon={ "plus-circle" }
+                                color={ "grey" }
+                                fontSize={ moderateScale(14,.2) }
+                                width={ moderateScale(120,.2) } />
+                        </View>
                     }
 
                     {/* Submit Error Message */}

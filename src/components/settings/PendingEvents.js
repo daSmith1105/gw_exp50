@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { moderateScale } from 'react-native-size-matters';
@@ -14,12 +14,25 @@ const PendingEvents = (props) => {
     const companies = useSelector(state => state.data.companies);
     const people = useSelector(state => state.data.people);
     const events = useSelector(state => state.data.events);
+    const uploading = useSelector(state => state.data.uploading);
     const webToken = useSelector(state => state.auth.webToken);
     const userId = useSelector(state => state.user.userId);
-    const fRequirePhotos = useSelector(state => state.user.fRequirePhotos);
+    const fUseNames = useSelector(state => state.user.fUseNames);
     const customerId = useSelector(state => state.user.customerId);
     const subscriberId = useSelector(state => state.user.subscriberId);
+    const siteId = useSelector(state => state.user.siteId);
     const gateId = useSelector(state => state.user.gateId);
+    const maxSyncRetry = useSelector(state => state.settings.maxSyncRetry)
+
+    const [processedEvents, setProcessedEvents] = useState([])
+
+    useEffect(() => {
+        const uploadEvent = async () => {
+            await handleForceUpload()
+        }
+
+        uploading && uploadEvent()
+    }, [events])
 
     const handleForceUpload = async () => {
         if (!online) {
@@ -28,16 +41,24 @@ const PendingEvents = (props) => {
         }
 
         dispatch(actions.setUploading(true))
-        let tempEvents = [...events]
-        const length = tempEvents.length
+        props.resetEventsSyncTime()
 
-        for (let i = 0; i < length; i++) {
-            await dispatch(actions.syncEvent( fRequirePhotos, webToken, userId, gateId, subscriberId, customerId, lpns, companies, people, tempEvents ) )
-            tempEvents.pop()
+        const revEvents = [...events].filter(e => !processedEvents.includes(e.id)).reverse()
+        if (revEvents && revEvents.length) {
+            const eventId = revEvents[0].id
+            const index = events.findIndex(e => e.id === eventId)
+
+            let processedIds = [...processedEvents]
+            processedIds.push(eventId)
+            setProcessedEvents(processedIds)
+
+            await dispatch(actions.syncEvent( maxSyncRetry, fUseNames, webToken, userId, siteId, gateId, subscriberId, customerId, lpns, companies, people, events, index ) )
+            // events useEffect will continue uploading the rest of the events
+        } else {
+            setProcessedEvents([])
+            await dispatch(actions.getAppData(customerId, webToken))
+            dispatch(actions.setUploading(false))
         }
-
-        await dispatch(actions.getAppData(customerId, webToken))
-        dispatch(actions.setUploading(false))
     }
 
     return (

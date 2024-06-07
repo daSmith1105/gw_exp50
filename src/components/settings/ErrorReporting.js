@@ -6,12 +6,14 @@ import * as actions from '../../actions';
 
 const ErrorReporting = (props) => {
     // app state
-    const { subscriberId, customerId, userId, gateId } = useSelector(state => state.user);
-    const localEvents = useSelector(state => state.data.events);
+    const { subscriberId, customerId, siteId, userId, gateId, fUseNames } = useSelector(state => state.user);
     const { webToken } = useSelector(state => state.auth);
+    const { people, events } = useSelector(state => state.data);
+
     // component state
     const [comment, setComment] = useState('');
     const [includePendingEvents, setIncludePendingEvents] = useState(false);
+
     // dispatch
     const dispatch = useDispatch();
 
@@ -24,11 +26,11 @@ const ErrorReporting = (props) => {
     const sendErrorReport = () => {
         props.setShowReportSendConfirmation(false);
 
-        let pending = '[]';
-        if(includePendingEvents){
-          pending = JSON.stringify(localEvents)
+        let pending = []
+        if (includePendingEvents) {
+          pending = events
         };
-        dispatch(actions.reportError(webToken,comment,subscriberId,customerId,userId,gateId,pending));
+        dispatch(actions.reportError(fUseNames, webToken, comment, subscriberId, customerId, siteId, userId, gateId, people, pending, events, ''));
         props.setShowReportSendConfirmation(false);
         setComment('');
         setIncludePendingEvents(false);

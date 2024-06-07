@@ -14,6 +14,7 @@ const Button = ( props ) => {
           height,
           buttonStyle,
           iconRight,
+          iconSize,
           fontSize,
           text,
           icon,
@@ -32,7 +33,7 @@ const Button = ( props ) => {
         { !iconRight &&
             <FontAwesome
               name={ icon }
-              size={ moderateScale(20,.2) }
+              size={ iconSize || moderateScale(20,.2) }
               color={ color || 'black' } />
         }
 
@@ -48,7 +49,7 @@ const Button = ( props ) => {
         { iconRight &&
             <FontAwesome
               name={ icon }
-              size={ moderateScale(20,.2) }
+              size={ iconSize || moderateScale(20,.2) }
               color={ color || 'black' } />
         }
 
@@ -62,17 +63,17 @@ const Button = ( props ) => {
 export { Button };
 
 const styles = {
-    buttonStyle: {
-        flexDirection: 'row',
-        borderWidth: 2,
-        borderRadius: 5,
-        padding: scale(5),
-        alignItems: 'center',
-        justifyContent: 'center',
-        margin: 10
-    },
-    textStyle: {
-        marginRight: scale(5),
-        marginLeft: scale(5),
-    }
+  buttonStyle: {
+    flexDirection: 'row',
+    borderWidth: 2,
+    borderRadius: 5,
+    padding: scale(5),
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 10,
+  },
+  textStyle: {
+    marginRight: scale(5),
+    marginLeft: scale(5),
+  }
 };
