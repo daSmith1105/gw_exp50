@@ -94,7 +94,7 @@ export const reportError = (fUseNames, webToken, comment, subscriberId, customer
       'Content-Accept': 'application-json',
       'Authorization': webToken
     },
-      url: API_URL + 'api/errorreport',
+      url: API_URL + 'api/errorreportV51',
       data: {
         subscriber: subscriberId,
         customer: customerId,
