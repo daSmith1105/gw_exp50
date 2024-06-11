@@ -209,7 +209,7 @@ const EventList = (props) => {
           'Content-Accept': 'application-json',
           'Authorization': webToken
         },
-        url: `${API_URL}api/mobileeventsbysite/${siteId}?${paramsString}`,
+        url: `${API_URL}api/mobileeventsbysiteV51/${siteId}?${paramsString}`,
         timeout: 15000,
 
       }).then( response => {

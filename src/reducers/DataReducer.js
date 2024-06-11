@@ -226,7 +226,7 @@ export default ( state = INITIAL_STATE, action ) => {
       // both server and local values are sorted, but we will prioritize local values and just merge those "new" data from server to our list
       const mergeAndSort = (localArr, serverArr) => {
         let sortedArr = [...localArr]
-        const toMergeArr = serverArr.filter( srv => !localArr.find(lo => lo.name === srv.name) )
+        const toMergeArr = serverArr.filter( srv => !localArr.find(lo => lo.id === srv.id) )
 
         for (let i = 0; i < toMergeArr.length; i++) {
           sortedArr = insertSorted(sortedArr, toMergeArr[i], 'name')
