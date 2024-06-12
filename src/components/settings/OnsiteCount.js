@@ -6,6 +6,7 @@ import { RowSection, Spinner } from '../common';
 
 const OnsiteCount = ( props ) => {
   // app state
+  const { fUseNames } = useSelector(state => state.user)
   const { onsiteCountLoading, onsitePeopleCount, onsiteVehicleCount } = useSelector(state => state.data)
 
     return (
@@ -17,7 +18,7 @@ const OnsiteCount = ( props ) => {
             <Text style={{ fontSize: moderateScale(14,.2) }}>Vehicles</Text>
           </View>
           <View style={ styles.dataStyle }>
-            <TouchableOpacity onPress={() => props.showOnsiteList('people')} disabled={onsitePeopleCount ? false : true}>
+            <TouchableOpacity onPress={() => fUseNames ? props.showOnsiteList('people') : null} disabled={onsitePeopleCount ? false : true}>
               <View style={{ ...styles.dataContainerStyle, backgroundColor: props.currentList === 'people' ? 'goldenrod' : 'lightgrey' }}>
                 {onsiteCountLoading
                   ? <Spinner color={'grey'}/>
@@ -27,7 +28,7 @@ const OnsiteCount = ( props ) => {
                 }
               </View>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => props.showOnsiteList('vehicle')} disabled={onsiteVehicleCount ? false : true}>
+            <TouchableOpacity onPress={() => fUseNames ? props.showOnsiteList('vehicle') : null} disabled={onsiteVehicleCount ? false : true}>
               <View style={{ ...styles.dataContainerStyle, backgroundColor: props.currentList === 'vehicle' ? 'goldenrod' : 'lightgrey' }}>
                 {onsiteCountLoading
                   ? <Spinner color={'grey'}/>

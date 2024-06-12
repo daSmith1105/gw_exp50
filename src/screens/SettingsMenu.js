@@ -17,7 +17,7 @@ import * as actions from '../actions';
 
 const SettingsMenu = ( props ) => {
   // app state
-  const { siteId, userId, fUseNames } = useSelector(state => state.user);
+  const { siteId, userId } = useSelector(state => state.user);
   const { webToken, isLoggedIn } = useSelector(state => state.auth);
   const { sendingReport } = useSelector(state => state.settings);
   const { uploading, events, people } = useSelector(state => state.data);
@@ -32,7 +32,7 @@ const SettingsMenu = ( props ) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-      dispatch(actions.getOnsiteList(siteId, webToken, events, people, fUseNames))
+      dispatch(actions.getOnsiteList(siteId, webToken, events, people))
   }, [events.length])
 
   const hideEventList = () => {

@@ -7,7 +7,7 @@ const Input = ( props ) => {
   return (
     <View style={ styles.containerStyle }>
       <Text style={ styles.textStyle }>{ props.label }</Text>
-      <TextInput 
+      <TextInput
         name={ props.name }
         style={ props.style ? props.style : styles.inputStyle }
         value={ props.value }
@@ -17,6 +17,7 @@ const Input = ( props ) => {
         autoCapitalization="word"
         onChangeText={ props.onChangeText }
         placeholder={ props.placeholder }
+        placeholderTextColor="gray"
         secureTextEntry={ props.secureTextEntry }
         onBlur={ props.onBlur }
         onFocus={ props.onFocus }
