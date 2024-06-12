@@ -11,8 +11,6 @@ import { Button } from '../common'
 
 const OnsiteHeader = (props) => {
 
-  const fUseNames = useSelector(state => state.user.fUseNames)
-
   const setSorting = (field) => {
     let order = 'asc'
     if (field === props.orderBy) {
@@ -26,7 +24,7 @@ const OnsiteHeader = (props) => {
       {(props.type === 'people') &&
         <View style={{...styles.cell, flex: 2}}>
           <TouchableOpacity style={styles.innerCell} onPress={() => setSorting('sPersonName')} >
-            <Text style={styles.text}>{fUseNames ? 'Name' : 'Driver'}</Text>
+            <Text style={styles.text}>Name</Text>
             <Button
               color={props.orderBy === 'sPersonName' ? 'black' : 'lightgrey'}
               icon={props.orderBy === 'sPersonName' && props.orderDir === 'desc' ? 'caret-down' : 'caret-up'}
@@ -64,34 +62,6 @@ const OnsiteHeader = (props) => {
         </TouchableOpacity>
       </View>
 
-      {(props.type === 'people' && !fUseNames)
-        ? <View style={styles.cell}>
-            <TouchableOpacity style={styles.innerCell} onPress={() => setSorting('bPassengerCount')} >
-              <Text style={styles.text}>Pax</Text>
-              <Button
-                color={props.orderBy === 'bPassengerCount' ? 'black' : 'lightgrey'}
-                icon={props.orderBy === 'bPassengerCount' && props.orderDir === 'desc' ? 'caret-down' : 'caret-up'}
-                noBorder={true}
-                buttonStyle={{ margin: 0, padding: 0}}
-                iconSize={ moderateScale(15,.2) }
-                width={ moderateScale(1,.2) } />
-            </TouchableOpacity>
-          </View>
-        : (props.type === 'vehicle') &&
-            <View style={styles.cell}>
-              <TouchableOpacity style={styles.innerCell} onPress={() => setSorting('bPersonCount')} >
-                <Text style={styles.text}>Persons</Text>
-                <Button
-                  color={props.orderBy === 'bPersonCount' ? 'black' : 'lightgrey'}
-                  icon={props.orderBy === 'bPersonCount' && props.orderDir === 'desc' ? 'caret-down' : 'caret-up'}
-                  noBorder={true}
-                  buttonStyle={{ margin: 0, padding: 0}}
-                  iconSize={ moderateScale(15,.2) }
-                  width={ moderateScale(1,.2) } />
-              </TouchableOpacity>
-            </View>
-      }
-
       <View style={styles.cell}>
         <TouchableOpacity style={styles.innerCell} onPress={() => setSorting('dTimestamp')} >
           <Text style={styles.text}>Date</Text>
@@ -109,7 +79,7 @@ const OnsiteHeader = (props) => {
         <Text style={styles.text}>Time</Text>
       </View>
 
-      {(props.type === 'people' && fUseNames) && <View style={styles.note}></View>}
+      { props.showNotesColumn && <View style={styles.note}></View>}
     </View>
   )
 }

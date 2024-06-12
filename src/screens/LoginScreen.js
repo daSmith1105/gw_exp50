@@ -50,8 +50,8 @@ const LoginScreen = ( props ) => {
 
   return (
     <View style={ keyboardVisible ? styles.keyboardOpenStyle : styles.containerStyle }>
-      <Image  style={ styles.logoStyle }
-              source={ require('../../assets/gw-logo.jpg') } />
+      <Image  style={ styles.logoStyle } source={ require('../../assets/gw-logo.jpg') } />
+
       <Input
         label="Email"
         placeholder="email@email.com"
@@ -105,7 +105,6 @@ export default LoginScreen;
       flex: 1,
       backgroundColor: '#fff',
       alignItems: 'center',
-      justifyContent: 'center'
     },
     keyboardOpenStyle: {
       flex: 1,
@@ -118,7 +117,7 @@ export default LoginScreen;
       height: 150,
       width: 317,
       marginBottom: 20,
-      marginTop: 20,
+      marginTop: '50%',
       marginRight: 'auto',
       marginLeft: 'auto'
     },

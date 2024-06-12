@@ -79,7 +79,7 @@ export const reportError = (fUseNames, webToken, comment, subscriberId, customer
           fUseNames: fUseNames,
         }
 
-        if (fUseNames && eventObj.passengers) {
+        if (eventObj.passengers && eventObj.passengers.length) {
           eventData.passengers = people.filter(p => eventObj.passengers.includes(p.id)).map(p => { return {...parseName(p.name), id: p.id}})
           eventData.passengerCount = eventData.passengers.length
         }

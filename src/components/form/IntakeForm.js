@@ -36,6 +36,8 @@ const IntakeForm = (props) => {
     const [reset, setReset] = useState(false);
     const [showCompany, setShowCompany] = useState(false)
     const [showDriver, setShowDriver] = useState(false)
+    const [uniqueLpns, setUniqueLpns] = useState(lpns)
+    const [uniqueCompanies, setUniqueCompanies] = useState(companies)
     const [uniquePeople, setUniquePeople] = useState(people)
 
     const dispatch = useDispatch();
@@ -55,8 +57,18 @@ const IntakeForm = (props) => {
     }, [selectedLpn, selectedCompany])
 
     useEffect(() => {
-        const uniqueDriver = getUniqueValue(people, 'name', selectedDriver)
-        setUniquePeople(uniqueDriver)
+        const unique = getUniqueValue(lpns, 'name', selectedLpn)
+        setUniqueLpns(unique)
+    }, [lpns])
+
+    useEffect(() => {
+        const unique = getUniqueValue(companies, 'name', selectedCompany)
+        setUniqueCompanies(unique)
+    }, [companies])
+
+    useEffect(() => {
+        const unique = getUniqueValue(people, 'name', selectedDriver)
+        setUniquePeople(unique)
     }, [people])
 
     const handleLpnChange = async (label, option) => {
@@ -89,9 +101,11 @@ const IntakeForm = (props) => {
             dispatch(actions.handleInputChange( 'selectedDriver', [] ))
         }
 
-        // show only unique people names, and if there are duplicates keep the one that is related to this lpn
-        const uniqueDriver = getUniqueValue(people, 'name', [currentLpn.person])
-        setUniquePeople(uniqueDriver)
+        // show only unique select list, and if there are duplicates keep the one that is related to this lpn
+        const uniqueC = getUniqueValue(companies, 'name', [currentLpn.company])
+        setUniqueCompanies(uniqueC)
+        const uniqueP = getUniqueValue(people, 'name', [currentLpn.person])
+        setUniquePeople(uniqueP)
     };
 
     const handleAddLpn = (name) => {
@@ -287,7 +301,7 @@ const IntakeForm = (props) => {
                         <SingleSelect
                             canAddItems={ true }
                             label="LPN:"
-                            items={ lpns }
+                            items={ uniqueLpns }
                             // when we add a new lpn we assign it an id of 0 - this allows us to check it in selectedLpn later
                             onAddItem={ () => handleAddLpn( lpnText.trim() ) }
                             onSelectedItemsChange={ option => handleLpnChange( 'selectedLpn', option ) }
@@ -305,7 +319,7 @@ const IntakeForm = (props) => {
                             <SingleSelect
                                 canAddItems={ true }
                                 label="Company:"
-                                items = { companies }
+                                items = { uniqueCompanies }
                                 // when we add a new company we assign it an id of 0 - this allows us to check it in selectedLpn later
                                 onAddItem = { () => handleAddCompany( companyText.trim() ) }
                                 onSelectedItemsChange = { option => dispatch(actions.handleInputChange( 'selectedCompany', option )) }

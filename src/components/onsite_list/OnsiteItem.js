@@ -8,8 +8,6 @@ import parseTimestamp from '../../utility/parseTimestamp'
 
 const OnsiteItem = (props) => {
 
-  const fUseNames = useSelector(state => state.user.fUseNames)
-
   const {item, lastItem} = props
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
@@ -40,16 +38,6 @@ const OnsiteItem = (props) => {
         <Text style={styles.text}>{item.sCompany}</Text>
       </View>
 
-      {(props.type === 'people' && !fUseNames)
-        ? <View style={styles.cell}>
-            <Text style={styles.text}>{item.bPassengerCount}</Text>
-          </View>
-        : (props.type === 'vehicle') &&
-            <View style={styles.cell}>
-              <Text style={styles.text}>{item.bPersonCount}</Text>
-            </View>
-      }
-
       <View style={styles.cell}>
         <Text style={styles.text}>{date}</Text>
       </View>
@@ -58,7 +46,7 @@ const OnsiteItem = (props) => {
         <Text style={styles.text}>{time}</Text>
       </View>
 
-      {(props.type === 'people' && fUseNames) &&
+      {(props.showNotesColumn) &&
         <View style={styles.note}>
           {item.sNote &&
             <Button
