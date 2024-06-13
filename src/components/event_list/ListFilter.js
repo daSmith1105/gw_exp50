@@ -1,11 +1,33 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { View, Text } from 'react-native';
 import { moderateScale } from 'react-native-size-matters';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SingleSelect, Button } from '../common';
+import getUniqueValue from '../../utility/getUniqueValue';
 
 const ListFilter = (props) => {
+    const {lpns, companies, people} = useSelector(state => state.data)
+
+    const [uniqueLpns, setUniqueLpns] = useState(lpns)
+    const [uniqueCompanies, setUniqueCompanies] = useState(companies)
+    const [uniquePeople, setUniquePeople] = useState(people)
+
+    useEffect(() => {
+        const unique = getUniqueValue(lpns, 'name', props.selectedLpn)
+        setUniqueLpns(unique)
+    }, [lpns])
+
+    useEffect(() => {
+        const unique = getUniqueValue(companies, 'name', props.selectedCompany)
+        setUniqueCompanies(unique)
+    }, [companies])
+
+    useEffect(() => {
+        const unique = getUniqueValue(people, 'name', props.selectedDriver)
+        setUniquePeople(unique)
+    }, [people])
 
     return (
       <View style={styles.containerStyle}>
@@ -33,7 +55,8 @@ const ListFilter = (props) => {
         <SingleSelect
             label="LPN:"
             canAddItems={false}
-            items={ [{id: '', name: 'ALL'}, ...props.lpns] }
+            items={ [{id: '', name: 'ALL'}, ...uniqueLpns] }
+            uniqueKey="name"
             onSelectedItemsChange={ option => props.handleFilterChange('lpn',option) }
             selectedItems={props.selectedLpn}
             selectText="select license plate"
@@ -43,7 +66,8 @@ const ListFilter = (props) => {
         <SingleSelect
             label="Company:"
             canAddItems={false}
-            items={ [{id: '', name: 'ALL'}, ...props.companies] }
+            items={ [{id: '', name: 'ALL'}, ...uniqueCompanies] }
+            uniqueKey="name"
             onSelectedItemsChange={ option => props.handleFilterChange('company',option) }
             selectedItems={props.selectedCompany}
             selectText="select company"
@@ -52,7 +76,8 @@ const ListFilter = (props) => {
         <SingleSelect
             label="Driver:"
             canAddItems={false}
-            items={ [{id: '', name: 'ALL'}, ...props.people] }
+            items={ [{id: '', name: 'ALL'}, ...uniquePeople] }
+            uniqueKey="name"
             onSelectedItemsChange={ option => props.handleFilterChange('driver',option)  }
             selectedItems={props.selectedDriver}
             selectText="select driver"
