@@ -33,7 +33,7 @@ export const closeReportModal = () => {
   };
 };
 
-export const reportError = (fUseNames, webToken, comment, subscriberId, customerId, siteId, userId, gate, people, pending, events, eventId) => {
+export const reportError = (webToken, comment, subscriberId, customerId, siteId, userId, gate, people, pending, events, eventId) => {
   return async ( dispatch ) => {
     dispatch({ type: REPORT_ERROR_START});
     const date = new Date();
@@ -71,17 +71,18 @@ export const reportError = (fUseNames, webToken, comment, subscriberId, customer
           sDriverFirst: driverName.first,
           sDriverLast: driverName.last,
           passengers: [],
-          passengerCount: fUseNames ? 0 : eventObj.passengerCount, // to ensure data consistency, we will initialize this with 0 if names are required, and the value will be updated when we also already have our passenger names
+          passengerCount: 0,
           sLpnPhoto: '',
           sLoadPhoto: '',
           images: '',
           sComment: eventObj.comment,
-          fUseNames: fUseNames,
         }
 
         if (eventObj.passengers && eventObj.passengers.length) {
           eventData.passengers = people.filter(p => eventObj.passengers.includes(p.id)).map(p => { return {...parseName(p.name), id: p.id}})
           eventData.passengerCount = eventData.passengers.length
+        } else {
+          eventData.passengerCount = eventObj.passengerCount
         }
 
         eventList.push(eventData)

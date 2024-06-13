@@ -6,7 +6,7 @@ import * as actions from '../../actions';
 
 const ErrorReporting = (props) => {
     // app state
-    const { subscriberId, customerId, siteId, userId, gateId, fUseNames } = useSelector(state => state.user);
+    const { subscriberId, customerId, siteId, userId, gateId } = useSelector(state => state.user);
     const { webToken } = useSelector(state => state.auth);
     const { people, events } = useSelector(state => state.data);
 
@@ -30,7 +30,7 @@ const ErrorReporting = (props) => {
         if (includePendingEvents) {
           pending = events
         };
-        dispatch(actions.reportError(fUseNames, webToken, comment, subscriberId, customerId, siteId, userId, gateId, people, pending, events, ''));
+        dispatch(actions.reportError(webToken, comment, subscriberId, customerId, siteId, userId, gateId, people, pending, events, ''));
         props.setShowReportSendConfirmation(false);
         setComment('');
         setIncludePendingEvents(false);
