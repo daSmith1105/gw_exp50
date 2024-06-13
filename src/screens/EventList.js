@@ -45,9 +45,9 @@ const EventList = (props) => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [selectedEventType, setSelectedEventType] = useState(['']);
-  const [selectedLpn, setSelectedLpn] = useState(['']);
-  const [selectedCompany, setSelectedCompany] = useState(['']);
-  const [selectedDriver, setSelectedDriver] = useState(['']);
+  const [selectedLpn, setSelectedLpn] = useState(['ALL']);
+  const [selectedCompany, setSelectedCompany] = useState(['ALL']);
+  const [selectedDriver, setSelectedDriver] = useState(['ALL']);
   const [selectedStatus, setSelectedStatus] = useState([props.pending ? 1 : '']);
 
   useEffect(() => {
@@ -73,9 +73,9 @@ const EventList = (props) => {
       start: filtered && startDate ? formatDate(startDate) : '',
       end: filtered && endDate ? formatDate(endDate) : '',
       type: selectedEventType[0],
-      lpn: selectedLpn[0],
-      company: selectedCompany[0],
-      driver: selectedDriver[0],
+      lpn: selectedLpn[0] === 'ALL' ? '' : selectedLpn[0],
+      company: selectedCompany[0] === 'ALL' ? '' : selectedCompany[0],
+      driver: selectedDriver[0] === 'ALL' ? '' : selectedDriver[0],
       status: selectedStatus[0],
     }
 
@@ -156,9 +156,9 @@ const EventList = (props) => {
           ((searchParams.start && formatDate(e.timestamp) < searchParams.start) ||
             (searchParams.end && formatDate(e.timestamp) > searchParams.end) ||
             (searchParams.type && e.type !== searchParams.type) ||
-            (searchParams.lpn && e.lpnObj.id !== searchParams.lpn) ||
-            (searchParams.company && e.companyObj.id !== searchParams.company) ||
-            (searchParams.driver && e.driverObj.id !== searchParams.driver))) {
+            (searchParams.lpn && e.lpnObj.name !== searchParams.lpn) ||
+            (searchParams.company && e.companyObj.name !== searchParams.company) ||
+            (searchParams.driver && e.driverObj.name !== searchParams.driver))) {
         return false
       }
       return true
@@ -194,8 +194,11 @@ const EventList = (props) => {
 
   const getUploadedEvents = async (offset, limit, searchParams) => {
     let uploadedData = {events: [], count: 0, error: false}
+    const name = parseName(searchParams.driver)
+    const person = {personFirst: name.first, personLast: name.last}
     let params = {
       ...searchParams,
+      ...person,
       offset,
       limit,
       i: makeId(4), // id is added to the query so we always get new data from the server - not 304 data cached
@@ -319,9 +322,6 @@ const EventList = (props) => {
                     selectedCompany={selectedCompany}
                     selectedDriver={selectedDriver}
                     selectedStatus={selectedStatus}
-                    lpns={lpns}
-                    companies={companies}
-                    people={people}
                     handleFilterChange={handleFilterChange}
                     getEventsByFilter={getEventsByFilter} />
       }
