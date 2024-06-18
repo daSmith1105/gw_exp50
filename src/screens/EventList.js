@@ -22,7 +22,7 @@ const EventList = (props) => {
   // app state
   const { siteId } = useSelector(state => state.user);
   const { webToken } = useSelector(state => state.auth);
-  const { lpns, companies, people, events } = useSelector( state => state.data );
+  const { people, events } = useSelector( state => state.data );
 
   // component state
   const [allEvents, setAllEvents] = useState([]);

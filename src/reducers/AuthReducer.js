@@ -4,7 +4,7 @@ import {
   LOGIN_USER_FAIL,
   LOGOUT_USER,
   CLEAR_LOGIN_ERROR,
-  RESET_REDUCER_GROUP // this is used when the app updates to a new version and we need to clear out the entire redux store
+  APP_VERSION_CHANGED,
 } from '../actions/types';
 
 const INITIAL_STATE = {
@@ -19,14 +19,12 @@ const INITIAL_STATE = {
 
 export default ( state = INITIAL_STATE, action ) => {
   switch ( action.type ) {
-    case RESET_REDUCER_GROUP:
-      return {...INITIAL_STATE};
     case LOGIN_USER_START:
       return {
         ...state,
-        loading: true, 
+        loading: true,
         error: '',
-      }
+      };
     case LOGIN_USER_SUCCESS:
       return {
         ...state,
@@ -36,22 +34,23 @@ export default ( state = INITIAL_STATE, action ) => {
         loading: false,
         email: action.payload.username,
         password: ''
-      }
+      };
     case LOGIN_USER_FAIL:
       return {
         ...state,
         error: 'Authentication Failed.',
         password: '',
         loading: false
-      }
-    case LOGOUT_USER:
-        return {...INITIAL_STATE}
+      };
     case CLEAR_LOGIN_ERROR:
       return {
         ...state,
         error: '',
         loading: false
       };
+    case LOGOUT_USER:
+    case APP_VERSION_CHANGED:
+      return {...INITIAL_STATE};
     default:
       return state;
   };

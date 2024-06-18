@@ -27,57 +27,49 @@ const IntakeScreen = props => {
 
   useKeepAwake();
 
-    return(
-      <View>
-        {/* panel is overlaid on top of the intake form */}
-        { showCamera &&
-            <CameraJS />
-        }
+  return (
+    <View>
+      {/* panel is overlaid on top of the intake form */}
+      { showCamera &&
+          <CameraJS />
+      }
 
-        {/* panel is overlaid on top of the intake form */}
-        { showAddPassenger &&
-            <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ?
-                            styles.addPassengerIOS :
-                            styles.addPassengerAndroid }>
-              {fUseNames ? <AddPassengers /> : <AddPassengerCount />}
-            </View>
-        }
+      {/* panel is overlaid on top of the intake form */}
+      { showAddPassenger &&
+          <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ? styles.ios : styles.android }>
+            {fUseNames ? <AddPassengers /> : <AddPassengerCount />}
+          </View>
+      }
 
-        {/* panel is overlaid on top of the intake form */}
-        { showAddComment &&
-            <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ?
-                            styles.addCommentIOS :
-                            styles.addCommentAndroid }>
-              <AddComment />
-            </View>
-        }
+      {/* panel is overlaid on top of the intake form */}
+      { showAddComment &&
+          <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ? styles.ios : styles.android }>
+            <AddComment />
+          </View>
+      }
 
-        {/* panel is overlaid on top of the intake form */}
-        { showSettingsMenu &&
-            <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ?
-                            styles.settingsMenuIOS :
-                            styles.settingsMenuAndroid }>
-              <SettingsMenu resetEventsSyncTime={props.resetEventsSyncTime} />
-            </View>
-        }
+      {/* panel is overlaid on top of the intake form */}
+      { showSettingsMenu &&
+          <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ? styles.ios : styles.android }>
+            <SettingsMenu resetEventsSyncTime={props.resetEventsSyncTime} />
+          </View>
+      }
 
-        {/* panel is overlaid on top of the intake form */}
-        { showLoginScreen &&
-            <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ?
-                            styles.loginScreenIOS :
-                            styles.loginScreenAndroid }>
-              <LoginScreen />
-            </View>
-        }
+      {/* panel is overlaid on top of the intake form */}
+      { showLoginScreen &&
+          <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ? styles.ios : styles.android }>
+            <LoginScreen />
+          </View>
+      }
 
-        <View style={ styles.containerStyle }>
-          <Header />
-          <IntakeForm />
-          <Footer />
-        </View>
-
+      <View style={ styles.containerStyle }>
+        <Header />
+        <IntakeForm />
+        <Footer />
       </View>
-    )
+
+    </View>
+  )
 };
 
 export default IntakeScreen;
@@ -89,60 +81,15 @@ const styles = {
     marginTop:'5%',
     width: width
   },
-  addPassengerIOS: {
+  ios: {
     height: height,
     width: width
   },
-  addPassengerAndroid: {
+  android: {
     height: 0,
     width: 0,
     position: 'absolute',
     top: -2000000,
-    left: -200000
+    left: -200000,
   },
-  addCommentIOS: {
-    height: height,
-    width: width
-  },
-  addCommentAndroid: {
-    height: 0,
-    width: 0,
-    position: 'absolute',
-    top: -2000000,
-    left: -200000
-  },
-  settingsMenuIOS: {
-    height: height,
-    width: width,
-    zIndex: 1
-  },
-  settingsMenuAndroid: {
-    height: 0,
-    width: 0,
-    position: 'absolute',
-    top: -2000000,
-    left: -200000
-  },
-  eventViewerIOS: {
-    height: height,
-    width: width
-  },
-  eventViewerAndroid: {
-    height: 0,
-    width: 0,
-    position: 'absolute',
-    top: -2000000,
-    left: -200000
-  },
-  loginScreenIOS: {
-    height: height,
-    width: width,
-    backgroundColor: 'white',
-    zIndex: 1
-  },
-  loginScreenAndroid: {
-    position: 'absolute',
-    top: -200000,
-    left: -200000
-  }
 };

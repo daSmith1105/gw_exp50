@@ -41,40 +41,42 @@ const ErrorReporting = (props) => {
       };
 
     return (
-        <Modal  title={ 'Error Report Confirmation.'}
-                confirmText="OK"
-                abortText="Cancel"
-                onConfirm={ sendErrorReport }
-                onAbort={ props.onAbort } >
-            <View style={styles.container}>
-                <Text style={styles.commentText}>Add comment: (optional)</Text>
-                <TextInput  style={styles.commentInput}
-                            returnKeyType="done"
-                            multiline={true}
-                            blurOnSubmit={true}
-                            onSubmitEditing={()=>{Keyboard.dismiss()}}
-                            textAlignVertical="top"
-                            numberOfLines={5}
-                            value={comment}
-                            onChangeText={ text => setComment(text)} />
+        <View style={styles.container}>
+            <Modal  title={ 'Error Report Confirmation.'}
+                    confirmText="OK"
+                    abortText="Cancel"
+                    onConfirm={ sendErrorReport }
+                    onAbort={ props.onAbort } >
+                <View style={ styles.innerContainer }>
+                    <Text style={styles.commentText}>Add comment: (optional)</Text>
+                    <TextInput  style={styles.commentInput}
+                                returnKeyType="done"
+                                multiline={true}
+                                blurOnSubmit={true}
+                                onSubmitEditing={()=>{Keyboard.dismiss()}}
+                                textAlignVertical="top"
+                                numberOfLines={5}
+                                value={comment}
+                                onChangeText={ text => setComment(text)} />
 
-                <View style={styles.switchContainer}>
-                    <Switch trackColor={{ false: '#767577', true: '#70E781' }}
-                            thumbColor={includePendingEvents ? '#367F41' : '#f4f3f4'}
-                            ios_backgroundColor="#3e3e3e"
-                            onValueChange={ toggleIncludePending }
-                            value={includePendingEvents} />
-                    <Text style={styles.switch}>
-                        Clear and Send Pending Events
-                    </Text>
+                    <View style={styles.switchContainer}>
+                        <Switch trackColor={{ false: '#767577', true: '#70E781' }}
+                                thumbColor={includePendingEvents ? '#367F41' : '#f4f3f4'}
+                                ios_backgroundColor="#3e3e3e"
+                                onValueChange={ toggleIncludePending }
+                                value={includePendingEvents} />
+                        <Text style={styles.switch}>
+                            Clear and Send Pending Events
+                        </Text>
+                    </View>
+                    { includePendingEvents &&
+                        <Text style={styles.warningText}>
+                            * warning: this will remove events from your device. please be certain this is what you would like to do
+                        </Text>
+                    }
                 </View>
-                { includePendingEvents &&
-                    <Text style={styles.warningText}>
-                        * warning: this will remove events from your device. please be certain this is what you would like to do
-                    </Text>
-                }
-            </View>
-        </Modal>
+            </Modal>
+        </View>
     )
 };
 
@@ -82,6 +84,17 @@ export default ErrorReporting;
 
 const styles = {
     container: {
+      position: 'absolute',
+      top: '-20%',
+      left: 0,
+      width: '100%',
+      height: '120%',
+      backgroundColor: 'white',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      zIndex: 10,
+    },
+    innerContainer: {
         width: '100%',
         marginBottom: 40,
     },
