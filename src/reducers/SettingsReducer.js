@@ -7,12 +7,16 @@ import {
   REPORT_ERROR_START,
   REPORT_ERROR_SUCCESS,
   REPORT_ERROR_FAIL,
-  RESET_REDUCER_GROUP // this is used when the app updates to a new version and we need to clear out the entire redux store
+  UPDATE_AVAILABLE,
+  UPDATE_LATER,
+  UPDATE_FAILED,
+  APP_VERSION_CHANGED,
 } from '../actions/types';
 
 const INITIAL_STATE = {
   showSettingsMenu: false,
   showLoginScreen: false,
+  showUpdateScreen: false,
   reportErrorFail: false,
   reportErrorSuccess: false,
   sendingReport: false,
@@ -65,7 +69,18 @@ export default ( state = INITIAL_STATE, action ) => {
         reportErrorSuccess: false,
         sendingReport: false
       };
-    case RESET_REDUCER_GROUP:
+    case UPDATE_AVAILABLE:
+      return {
+        ...state,
+        showUpdateScreen: true,
+      };
+    case UPDATE_LATER:
+    case UPDATE_FAILED:
+      return {
+        ...state,
+        showUpdateScreen: false,
+      };
+    case APP_VERSION_CHANGED:
     case LOGIN_USER_SUCCESS:
     case LOGOUT_USER:
       return {...INITIAL_STATE};

@@ -1,9 +1,7 @@
 import {
   LOGIN_USER_SUCCESS,
-  GET_ASSIGNMENT_DATA_SUCCESS,
-  GET_ASSIGNMENT_DATA_FAIL,
   LOGOUT_USER,
-  RESET_REDUCER_GROUP // this is used when the app updates to a new version and we need to clear out the entire redux store
+  APP_VERSION_CHANGED,
 } from '../actions/types';
 
 const INITIAL_STATE = {
@@ -47,26 +45,9 @@ export default ( state = INITIAL_STATE, action ) => {
         siteName: user.siteName,
         fRequirePhotos: user.fRequirePhotos === 1 ? true : false,
         fUseNames: user.fUseNames === 1 ? true : false,
-      }
-    // i dont think this is being used anywhere - cleanup in future
-    case GET_ASSIGNMENT_DATA_SUCCESS :
-      const data = action.payload;
-      return {
-        ...state,
-        gateId: data.Gate.id,
-        gateName: data.Gate.sName
-      }
-    // i dont think this is being used anywhere - cleanup in future
-    case GET_ASSIGNMENT_DATA_FAIL :
-      return {
-        ...state,
-        gateId: 0,
-        gateName: 'No Gate Assignment',
-        siteId: 0,
-        siteName: 'No Site Found'
       };
-    case RESET_REDUCER_GROUP:
     case LOGOUT_USER:
+    case APP_VERSION_CHANGED:
       return {...INITIAL_STATE};
     default:
       return state;

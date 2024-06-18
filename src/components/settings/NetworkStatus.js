@@ -6,7 +6,7 @@ import { moderateScale } from 'react-native-size-matters';
 
 const NetworkStatus = () => {
 
-    const online = useSelector(state => state.data.online);
+    const online = useSelector(state => state.utility.online);
 
     return (
         <RowSection>

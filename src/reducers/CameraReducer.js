@@ -6,7 +6,7 @@ import {
   SHOW_CAMERA_MODIFIED,
   LOGIN_USER_START,
   LOGOUT_USER,
-  RESET_REDUCER_GROUP // this is used when the app updates to a new version and we need to clear out the entire redux store
+  APP_VERSION_CHANGED,
 } from '../actions/types';
 
 const INITIAL_STATE = {
@@ -16,8 +16,6 @@ const INITIAL_STATE = {
 
 export default ( state = INITIAL_STATE, action ) => {
   switch ( action.type ) {
-    case RESET_REDUCER_GROUP:
-      return {...INITIAL_STATE};
     case TOGGLE_FLASH:
       if ( state.flash === 'auto' ) {
         return {
@@ -40,10 +38,8 @@ export default ( state = INITIAL_STATE, action ) => {
     case LOGIN_USER_START:
     case LOGOUT_USER:
     case HIDE_CAMERA:
-      return {
-        ...state,
-        showCamera: false
-      };
+    case APP_VERSION_CHANGED:
+      return {...INITIAL_STATE};
     default:
       return state;
   };

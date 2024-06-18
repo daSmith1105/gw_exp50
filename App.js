@@ -103,15 +103,8 @@ class App extends React.Component {
         <Provider store={ store } >
           <StatusBar hidden />
           <Clock date={this.state.date} />
-          <PersistGate loading={ <Loading /> }
-                       persistor={ persistor } >
-            { this.state.isLoadingComplete ?
-                <Main hasCameraPermission={ this.state.hasCameraPermission }
-                      hasCameraRollPermission={ this.state.hasCameraRollPermission}
-                      isLoadingComplete={ this.state.isLoadingComplete } 
-                      timerIntervalID={ this.timer } />  :
-                <Loading />
-            }
+          <PersistGate loading={ <Loading /> } persistor={ persistor } >
+            { this.state.isLoadingComplete ? <Main /> : <Loading /> }
           </PersistGate>
         </Provider>
       </GestureHandlerRootView>

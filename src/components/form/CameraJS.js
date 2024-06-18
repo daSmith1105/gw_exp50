@@ -291,7 +291,6 @@ const styles = {
     cameraStyle: {
         position: 'absolute',
         top: 30,
-        bottom: 0,
         alignItems: 'center',
         zIndex: 30,
         height: '100%',

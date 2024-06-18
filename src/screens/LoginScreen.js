@@ -9,8 +9,8 @@ const LoginScreen = ( props ) => {
   // app state
   const error = useSelector(state => state.auth.error);
   const loading = useSelector(state => state.auth.loading);
-  const keyboardVisible = useSelector(state => state.utility.keyboardVisible);
-  const online = useSelector(state => state.data.online);
+  const online = useSelector(state => state.utility.online);
+
   // component state
   const [email,setEmail] = useState('');
   const [password,setPassword] = useState('');
@@ -49,7 +49,7 @@ const LoginScreen = ( props ) => {
   };
 
   return (
-    <View style={ keyboardVisible ? styles.keyboardOpenStyle : styles.containerStyle }>
+    <View style={ styles.containerStyle }>
       <Image  style={ styles.logoStyle } source={ require('../../assets/gw-logo.jpg') } />
 
       <Input
@@ -105,13 +105,6 @@ export default LoginScreen;
       flex: 1,
       backgroundColor: '#fff',
       alignItems: 'center',
-    },
-    keyboardOpenStyle: {
-      flex: 1,
-      backgroundColor: '#fff',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingBottom: 360
     },
     logoStyle: {
       height: 150,

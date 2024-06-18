@@ -8,7 +8,7 @@ import DataReducer from './DataReducer';
 import FormReducer from './FormReducer';
 import ModalReducer from './ModalReducer';
 import CameraReducer from './CameraReducer';
-import EventReducer from './EventReducer';
+import SyncReducer from './SyncReducer';
 
 export default combineReducers({
     auth: AuthReducer,
@@ -20,5 +20,5 @@ export default combineReducers({
     form: FormReducer,
     modal: ModalReducer,
     camera: CameraReducer,
-    event: EventReducer
+    sync: SyncReducer,
 });

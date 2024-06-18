@@ -1,7 +1,8 @@
-import { 
-  TOGGLE_LAYOUT_KEYBOARD_VISIBLE,  
+import {
+  TOGGLE_LAYOUT_KEYBOARD_VISIBLE,
   CLOSE_KEYBOARD,
   UPDATE_NETWORK_STATUS,
+  CLEAR_ALERT_MESSAGE,
 } from './types';
 
 export const updateNetworkStatus = ( status ) => {
@@ -23,6 +24,11 @@ export const toggleLayoutKeyboardVisible = () => {
   };
 };
 
+export const clearAlertMessage = () => {
+  return {
+    type: CLEAR_ALERT_MESSAGE
+  };
+}
 
 
-  
+

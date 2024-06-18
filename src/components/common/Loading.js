@@ -1,16 +1,20 @@
 import React from 'react';
-import { View, Image } from 'react-native';
+import { View, Image, Text } from 'react-native';
+import { moderateScale } from 'react-native-size-matters';
 import { Spinner } from '.';
 import splashImg from '../../../assets/dividia.jpg';
 
-const Loading = () => {
+const Loading = (props) => {
 
   return(
     <View style={ styles.containerStyle }>
-      <Image source={ splashImg } />
+      { props.message && <Text style={styles.messageContainer}>{props.message}</Text>}
       <View style={ styles.spinnerContainerStyle }>
         <Spinner />
       </View>
+
+      <Image source={ splashImg } />
+
     </View>
   );
 };
@@ -19,18 +23,18 @@ export default Loading;
 
 const styles = {
   containerStyle: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
+    height: '90%',
     alignItems: 'center',
-    justifyContent: 'center',   
-    position: 'relative'
+    justifyContent: 'center',
+    padding: 10,
   },
   spinnerContainerStyle: {
-    position: 'absolute', 
-    top: '40%', 
-    left: 0, 
-    right: 0, 
-    margin: 'auto'
-  }
+    height: 50,
+  },
+  messageContainer: {
+    fontSize: moderateScale(16,.2),
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
 };
