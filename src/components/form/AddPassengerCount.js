@@ -96,7 +96,7 @@ export default AddPassengerCount;
 const styles = {
   containerStyle: {
     position: 'absolute',
-    top: -100,
+    top: '-5%',
     left: 0,
     width: '100%',
     height: '105%',

@@ -12,21 +12,21 @@ class Modal extends React.Component {
       <View style={ styles.containerStyle } >
         <View style={ styles.modalStyle }>
           <Text style={ styles.textStyle }>{ this.props.title }</Text>
-        
+
           { this.props.message &&
-            <Text style={ styles.messageStyle }>{ this.props.message }</Text> 
+            <Text style={ styles.messageStyle }>{ this.props.message }</Text>
           }
           { this.props.subMessage &&
-            <Text style={ styles.subMessageStyle }>{ this.props.subMessage }</Text> 
+            <Text style={ styles.subMessageStyle }>{ this.props.subMessage }</Text>
           }
 
           { this.props.icon &&
-            <FontAwesome name={ this.props.icon } size={ moderateScale(60,.2) } color={ this.props.iconColor } /> 
+            <FontAwesome name={ this.props.icon } size={ moderateScale(60,.2) } color={ this.props.iconColor } />
           }
 
           { this.props.loader &&
             <Image  source={ require('../../../assets/loader.gif') }
-                    style={{ width: 150, height: 150, marginTop: -10 }} /> 
+                    style={{ width: 150, height: 150, marginTop: -10 }} />
           }
 
           { this.props.children }
@@ -37,8 +37,7 @@ class Modal extends React.Component {
                 text={ this.props.abortText || 'Cancel' }
                 onPress={ this.props.onAbort }
                 color='grey'
-                width={ moderateScale(130,.2) }
-              /> 
+              />
             }
 
             { this.props.onConfirm &&
@@ -46,11 +45,10 @@ class Modal extends React.Component {
                 text={ this.props.confirmText || 'OK' }
                 onPress={ this.props.onConfirm }
                 color='grey'
-                width={ moderateScale(130,.2) }
-              /> 
+              />
             }
           </View>
-          
+
         </View>
       </View>
     );
@@ -66,7 +64,7 @@ const styles = {
     left: 0,
     width: '100%',
     height: '100%',
-    overflow: 'hidden', 
+    overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(52, 52, 52, 0.9)',
@@ -89,6 +87,7 @@ const styles = {
     shadowRadius: 10,
   },
   messageStyle: {
+    marginBottom: moderateScale(10,.2),
     fontSize: moderateScale(18,.2),
     width: '80%',
     textAlign: 'center',

@@ -188,10 +188,10 @@ export default AddPassengers;
 const styles = {
   container: {
     position: 'absolute',
-    top: -100,
+    top: '-5%',
     left: 0,
     width: '100%',
-    height: '110%',
+    height: '105%',
     backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'flex-start',

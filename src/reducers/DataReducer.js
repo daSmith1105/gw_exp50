@@ -11,14 +11,12 @@ import {
   CLEAR_EVENT_SAVE_MODAL,
   CLEAR_FORM,
   SYNC_DATA,
-  UPDATE_NETWORK_STATUS,
   SET_ONSITE_LIST_LOADING,
   SET_ONSITE_LIST,
-  SET_UPLOADING,
   LOGOUT_USER,
   REPORT_ERROR_SUCCESS,
   REPORT_ERROR_FAIL,
-  RESET_REDUCER_GROUP, // this is used when the app updates to a new version and we need to clear out the entire redux store,
+  APP_VERSION_CHANGED,
 } from '../actions/types';
 
 const INITIAL_STATE = {
@@ -42,8 +40,6 @@ const INITIAL_STATE = {
   onsiteVehicle: [],
   onsitePeopleCount: 0,
   onsiteVehicleCount: 0,
-  online: false,
-  uploading: false,
 };
 
 export default ( state = INITIAL_STATE, action ) => {
@@ -62,19 +58,12 @@ export default ( state = INITIAL_STATE, action ) => {
         getLpnError: '',
         getCompanyError: '',
         getPeopleError: '',
-      }
+      };
     case REPORT_ERROR_FAIL:
       return {
         ...state,
         events: action.events,
-      }
-    case UPDATE_NETWORK_STATUS:
-      return {
-        ...state,
-        online: action.payload
-      }
-    case RESET_REDUCER_GROUP:
-      return {...INITIAL_STATE};
+      };
     case ADD_NEW_LPN:
       // remove the old temporary value - indicated with id = '0' - note that it's a string
       let lpnsLo = state.lpns.filter(l => l.id !== '0')
@@ -84,7 +73,7 @@ export default ( state = INITIAL_STATE, action ) => {
       return {
         ...state,
         lpns: lpnsLo,
-      }
+      };
     case ADD_NEW_COMPANY:
       // remove the old temporary value - indicated with id = '0' - note that it's a string
       let companiesLo = state.companies.filter(l => l.id !== '0')
@@ -94,7 +83,7 @@ export default ( state = INITIAL_STATE, action ) => {
       return {
         ...state,
         companies: companiesLo,
-      }
+      };
     case ADD_NEW_DRIVER:
       // remove the old temporary value - indicated with id = '0' - note that it's a string
       let peopleLo = state.people.filter(l => l.id !== '0')
@@ -104,7 +93,7 @@ export default ( state = INITIAL_STATE, action ) => {
       return {
         ...state,
         people: peopleLo,
-      }
+      };
     case ADD_NEW_PASSENGERS:
       let passengerArr = [...state.people]
 
@@ -119,7 +108,7 @@ export default ( state = INITIAL_STATE, action ) => {
       return {
         ...state,
         people: passengerArr,
-      }
+      };
     case CLEAR_EVENT_SAVE_MODAL:
       return {
         ...state,
@@ -141,7 +130,7 @@ export default ( state = INITIAL_STATE, action ) => {
       return {
         ...state,
         onsiteCountLoading: action.payload,
-      }
+      };
     case SET_ONSITE_LIST:
       return {
         ...state,
@@ -150,7 +139,7 @@ export default ( state = INITIAL_STATE, action ) => {
         onsitePeopleCount: action.payload.peopleCount,
         onsiteVehicle: action.payload.vehicle,
         onsiteVehicleCount: action.payload.vehicleCount,
-      }
+      };
     case LOGOUT_USER:
       return {
         ...state,
@@ -164,7 +153,7 @@ export default ( state = INITIAL_STATE, action ) => {
         getLpnError: '',
         getCompanyError: '',
         getPeopleError: '',
-      }
+      };
     case SAVE_EVENT:
       // save the event to local state
       let lpnArr = state.lpns.filter(a => a.id !== '0');            // get lpns without the temporary value
@@ -220,7 +209,7 @@ export default ( state = INITIAL_STATE, action ) => {
         companies: action.companies,
         people: action.people,
         events: action.events,
-      }
+      };
     case GET_DATA_SUCCESS:
       // merge data from server (data from different gates of the same customer) to our local values
       // both server and local values are sorted, but we will prioritize local values and just merge those "new" data from server to our list
@@ -247,11 +236,8 @@ export default ( state = INITIAL_STATE, action ) => {
       return {
         ...state
       };
-    case SET_UPLOADING:
-      return {
-        ...state,
-        uploading: action.payload
-      }
+    case APP_VERSION_CHANGED:
+      return {...INITIAL_STATE};
     default:
         return state
   };

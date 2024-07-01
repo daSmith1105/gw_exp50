@@ -13,12 +13,10 @@ import {
   MODIFY_EXISTING_PHOTO,
   SHOW_CAMERA_MODIFIED,
   LOGOUT_USER,
-  PURGE_ALL_DATA,
-  RESET_REDUCER_GROUP // this is used when the app updates to a new version and we need to clear out the entire redux store
+  APP_VERSION_CHANGED,
 } from '../actions/types';
 
 const INITIAL_STATE = {
-  uploading: false,
   formIncompleteError: false,
   lpnText: '',
   companyText: '',
@@ -48,12 +46,6 @@ const INITIAL_STATE = {
 
 export default ( state = INITIAL_STATE, action ) => {
   switch ( action.type ) {
-    case RESET_REDUCER_GROUP:
-    case PURGE_ALL_DATA:
-    case CLEAR_FORM:
-    case LOGOUT_USER:
-      return {...INITIAL_STATE}
-
     case HANDLE_INPUT_CHANGE:
       return {
         ...state,
@@ -99,7 +91,6 @@ export default ( state = INITIAL_STATE, action ) => {
       return {
         ...state,
         formIncompleteError: true,
-        uploading: false
       };
     case TAKE_PHOTO_SUCCESS:
       return {
@@ -121,27 +112,31 @@ export default ( state = INITIAL_STATE, action ) => {
           photoCount: 6,
           maxPhotosReached: true
         };
+      }
+    case MODIFY_EXISTING_PHOTO:
+      let newState1 = [ ...state.additionalPhotos ];
+      const objPos1 = newState1.findIndex( obj => obj.id === action.id );
+      newState1.splice( objPos1, 1, { 'id': action.id, 'label': action.label, 'path': action.path } );
+      return {
+        ...state,
+        additionalPhotos: newState1,
+        currentPhoto: ''
       };
-      case MODIFY_EXISTING_PHOTO:
-        let newState1 = [ ...state.additionalPhotos ];
-        const objPos1 = newState1.findIndex( obj => obj.id === action.id );
-        newState1.splice( objPos1, 1, { 'id': action.id, 'label': action.label, 'path': action.path } );
-        return {
-          ...state,
-          additionalPhotos: newState1,
-          currentPhoto: ''
-        };
-      case REMOVE_PHOTO_INSTANCE:
-        let newState2 = [ ...state.additionalPhotos ];
-        const objPos2 = newState2.findIndex( obj => obj.id === action.payload );
-        newState2.splice( objPos2, 1 );
-        return {
-          ...state,
-          additionalPhotos: newState2,
-          photoCount: state.photoCount - 1,
-          maxPhotosReached: false
-        };
-      default:
-        return state;
-    };
+    case REMOVE_PHOTO_INSTANCE:
+      let newState2 = [ ...state.additionalPhotos ];
+      const objPos2 = newState2.findIndex( obj => obj.id === action.payload );
+      newState2.splice( objPos2, 1 );
+      return {
+        ...state,
+        additionalPhotos: newState2,
+        photoCount: state.photoCount - 1,
+        maxPhotosReached: false
+      };
+    case APP_VERSION_CHANGED:
+    case CLEAR_FORM:
+    case LOGOUT_USER:
+      return {...INITIAL_STATE};
+    default:
+      return state;
+  };
 };

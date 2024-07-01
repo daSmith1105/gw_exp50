@@ -4,7 +4,7 @@ import {
   SHOW_ADD_COMMENT_MODAL,
   HIDE_ADD_COMMENT_MODAL,
   CLEAR_FORM,
-  RESET_REDUCER_GROUP // this is used when the app updates to a new version and we need to clear out the entire redux store
+  APP_VERSION_CHANGED,
 } from '../actions/types';
 
 const INITIAL_STATE = {
@@ -14,9 +14,6 @@ const INITIAL_STATE = {
 
 export default ( state = INITIAL_STATE, action ) => {
   switch ( action.type ) {
-    case CLEAR_FORM:
-    case RESET_REDUCER_GROUP:
-      return {...INITIAL_STATE};
     case SHOW_ADD_PASSENGER_MODAL :
       return {
         ...state,
@@ -39,6 +36,9 @@ export default ( state = INITIAL_STATE, action ) => {
         ...state,
         showAddComment: false
       };
+    case CLEAR_FORM:
+    case APP_VERSION_CHANGED:
+      return {...INITIAL_STATE};
     default:
       return state;
   };

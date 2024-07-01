@@ -77,7 +77,7 @@ const OnsiteList = (props) => {
 
   return (
     <View style={styles.container} key={forceRender}>
-      <View style={{ position: 'absolute', top: 0, left: 0, zIndex: 100 }}>
+      <View style={{ position: 'absolute', top: 0, left: '2.5%', zIndex: 100 }}>
         <Button
           color='grey'
           icon={ 'arrow-circle-left' }

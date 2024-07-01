@@ -2,9 +2,11 @@ import React, {useState, useEffect} from 'react';
 import { View } from 'react-native';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler'
 import IntakeScreen from './src/screens/IntakeScreen';
-import Loading from './src/components/common/Loading';
 import { useSelector, useDispatch } from 'react-redux';
 import NetInfo from "@react-native-community/netinfo";
+import Modal from './src/components/common/Modal';
+import UpdateScreen from './src/screens/UpdateScreen';
+import SyncEvents from './src/components/common/SyncEvents';
 import * as actions from './src/actions';
 
 const Main = (props) => {
@@ -18,6 +20,7 @@ const Main = (props) => {
 
   let eventsIntRef = 0;
   let dataIntRef = 0;
+  let backendIntRef = 0
   const eventsIntTime = 20 * 1000; // (ms) attempt to sync events every 20 seconds if device is idle
   const dataIntTime = 5 * 60 * 1000; // (ms) attempt to get new app data - lpns,companies,people every 5 minutes if devicce is not syncing events
   let unsubscribe = null; // net info event listener
@@ -27,7 +30,6 @@ const Main = (props) => {
   const lpns = useSelector(state => state.data.lpns);
   const companies = useSelector(state => state.data.companies);
   const people = useSelector(state => state.data.people);
-  const online = useSelector(state => state.data.online);
   const userId = useSelector(state => state.user.userId);
   const customerId = useSelector(state => state.user.customerId);
   const siteId = useSelector(state => state.user.siteId);
@@ -36,6 +38,10 @@ const Main = (props) => {
   const webToken = useSelector(state => state.auth.webToken);
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn)
   const maxSyncRetry = useSelector(state => state.settings.maxSyncRetry)
+  const showUpdateScreen = useSelector(state => state.settings.showUpdateScreen);
+  const online = useSelector(state => state.utility.online);
+  const alertMessage = useSelector(state => state.utility.alertMessage);
+  const forceSync = useSelector(state => state.sync.forceSync)
 
   // dispatch
   const dispatch = useDispatch();
@@ -51,11 +57,17 @@ const Main = (props) => {
     const t = Gesture.Tap().onBegin(() => { resetEventsSyncTime() })
     setTap(t)
 
+    // poll for updates / send heartbeat to backend every 15 minutes (15 * 60 * 1000)ms
+    backendIntRef = setInterval(() => {
+      dispatch(actions.checkBackendUpdates())
+    }, 900000)
+
     return () => {
       clearInterval(eventsIntRef);
       clearInterval(eventsIntState)
       clearInterval(dataIntRef);
       clearInterval(dataIntState)
+      clearInterval(backendIntRef);
       unsubscribe(); // remove net info event listener
     };
   }, [])
@@ -154,19 +166,26 @@ const Main = (props) => {
   }
 
   return (
-    <View style={ styles.containerStyle }>
-      <GestureDetector gesture={tap}>
-        { props.isLoadingComplete ? <IntakeScreen resetEventsSyncTime={resetEventsSyncTime} /> : <Loading /> }
-      </GestureDetector>
-    </View>
+    <GestureDetector gesture={tap}>
+      <View style={ styles.container }>
+        { alertMessage && <Modal title={''} confirmText="OK" onConfirm={() => dispatch(actions.clearAlertMessage())} message={alertMessage} ></Modal> }
+
+        { showUpdateScreen && <UpdateScreen /> }
+
+        {/* this is called before the app updates or when user chose to force upload */}
+        { forceSync && <SyncEvents resetEventsSyncTime={resetEventsSyncTime} />}
+
+        <IntakeScreen resetEventsSyncTime={resetEventsSyncTime} />
+      </View>
+    </GestureDetector>
   )
 }
 
 export default Main;
 
 const styles = {
-  containerStyle: {
+  container: {
     flex: 1,
-    marginTop: 30
-  }
+    marginTop: 30,
+  },
 };

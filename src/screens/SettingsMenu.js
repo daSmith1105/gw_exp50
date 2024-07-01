@@ -1,8 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { View, Text, Dimensions } from 'react-native';
+import { View } from 'react-native';
 import { RowSection, Button } from '../components/common';
-import Loading from '../components/common/Loading';
 import SettingsHeader from '../components/settings/SettingsHeader';
 import NetworkStatus from '../components/settings/NetworkStatus';
 import PendingEvents from '../components/settings/PendingEvents';
@@ -20,7 +19,7 @@ const SettingsMenu = ( props ) => {
   const { siteId, userId } = useSelector(state => state.user);
   const { webToken, isLoggedIn } = useSelector(state => state.auth);
   const { sendingReport } = useSelector(state => state.settings);
-  const { uploading, events, people } = useSelector(state => state.data);
+  const { events, people } = useSelector(state => state.data);
 
   // component state
   const [showReportSendConfirmation, setShowReportSendConfirmation] = useState(false);
@@ -69,12 +68,6 @@ const SettingsMenu = ( props ) => {
 
   return (
     <View style={ styles.containerStyle }>
-      { uploading &&
-        <View style={styles.loadingContainerStyle}>
-          <Text style={styles.loadingText}>Uploading pending events</Text>
-          <View style={{height: '20%'}}><Loading /></View>
-        </View>
-      }
 
       <View style={ styles.listStyle }>
         <SettingsHeader />
@@ -156,33 +149,19 @@ const styles = {
   containerStyle: {
     flex: 1,
     position: 'absolute',
-    top: 30,
+    top: '5%',
     left: 0,
     width: '100%',
-    height: Dimensions.get('window').height - 50,
+    height: '95%',
     backgroundColor: 'white',
     zIndex: 32,
   },
-  loadingContainerStyle: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
-    zIndex: 1000,
-    alignItems: 'center',
-    backgroundColor: 'white',
-  },
-  loadingText: {
-    fontSize: moderateScale(20,.2),
-    fontWeight: 'bold',
-    marginTop: '50%',
-  },
   listStyle: {
     position: 'relative',
-    top: 10,
+    top: 0,
     left: '2.5%',
     backgroundColor: 'white',
     width: '95%',
-    height: Dimensions.get('window').height - 50,
     alignItems: 'center',
   }
 };

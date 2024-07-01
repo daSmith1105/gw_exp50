@@ -2,8 +2,12 @@ import * as FileSystem from 'expo-file-system';
 import axios from 'axios';
 import config from '../../backend.json';
 import parseName from '../utility/parseName';
-import { SYNC_DATA } from './types';
 import { reportError } from './SettingsActions';
+
+import {
+  SYNC_DATA,
+  SET_FORCE_SYNC,
+} from './types';
 
 const API_URL = config.backend;
 
@@ -341,5 +345,12 @@ export const syncEvent = (maxSyncRetry, webToken, userId, siteId, gate, subscrib
         events: eventList,
       });
     }
+  }
+}
+
+export const setForceSync = (value) => {
+  return {
+    type: SET_FORCE_SYNC,
+    payload: value,
   }
 }

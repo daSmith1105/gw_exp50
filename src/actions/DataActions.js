@@ -5,7 +5,6 @@ import parseName from '../utility/parseName';
 import {
   GET_DATA_SUCCESS,
   GET_DATA_FAIL,
-  SET_UPLOADING,
   SET_ONSITE_LIST_LOADING,
   SET_ONSITE_LIST,
 } from './types';
@@ -38,13 +37,6 @@ export const getAppData = (id, token) => {
     });
   };
 };
-
-export const setUploading = (value) => {
-  return {
-    type: SET_UPLOADING,
-    payload: value,
-  }
-}
 
 export const getOnsiteList = (siteId, token, events, people) => {
   return async (dispatch) => {
