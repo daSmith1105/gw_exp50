@@ -142,6 +142,14 @@ const IntakeForm = (props) => {
                     setSaving(false)
                     return;
                 };
+
+                const driver = people.find(p => p.id === selectedDriver[0])
+                if (driver && driver.name.split(' ').length < 2) {
+                    alert(`Please provide driver's first and last name.`)
+                    setSaving(false)
+                    return;
+                }
+
                 setEventInState();
             } else {
                 dispatch(actions.submitFormError());
