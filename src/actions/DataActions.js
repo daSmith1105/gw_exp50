@@ -20,7 +20,7 @@ export const getAppData = (id, token) => {
         'Content-Accept': 'application-json',
         'Authorization': token
       },
-      url: `${API_URL}api/mobileappdata?id=${id}`,
+      url: `${API_URL}api/mobileappdataV51?id=${id}`,
       timeout: 10000
     })
     .then( response => {
@@ -57,7 +57,7 @@ export const getOnsiteList = (siteId, token, events, people, fUseNames) => {
 
     if (siteId) {
       serverList = await axios({
-        url: `${API_URL}api/getonsitelistbysite/${siteId}`,
+        url: `${API_URL}api/getonsitelistbysiteV51/${siteId}`,
         method: 'get',
         headers: {
           'Authorization': token

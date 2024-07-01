@@ -288,7 +288,7 @@ export const syncEvent = (maxSyncRetry, fUseNames, webToken, userId, siteId, gat
         headers: {
           'Authorization': webToken
         },
-        url: API_URL + 'api/gateevent',
+        url: API_URL + 'api/gateeventV51',
         data: eventData,
         timeout: 20000,
 
