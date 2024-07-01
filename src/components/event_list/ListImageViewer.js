@@ -6,77 +6,78 @@ import moment from 'moment';
 
 const ListImageViewer = (props) => {
 
-    return (
-        <View style={styles.containerStyle}>
-          <ScrollView contentContainerStyle={styles.scrollContainerStyle} 
-                      showsVerticalScrollIndicator={ false }
-                      maximumZoomScale={ 2 } >
-            <Text style={styles.labelTextStyle}>
-              LPN Photo  |  { moment(props.timestamp).format('MM-DD-YYYY h:mm a') }
-            </Text>
-            <Image 
-              source={{ uri: props.lpn }}
-              style={styles.imageStyle} />
-            <Text style={{ ...styles.labelTextStyle, marginTop: scale(10) }}>
-              Load Photo  |  { moment(props.timestamp).format('MM-DD-YYYY h:mm a') }
-            </Text>
-            <Image 
-              source={{ uri: props.load }}
-              style={styles.imageStyle} />
-            
-          </ScrollView>
+  return (
+    <View style={styles.containerStyle}>
+      <ScrollView contentContainerStyle={styles.scrollContainerStyle} showsVerticalScrollIndicator={ false } maximumZoomScale={ 2 } >
 
-          <View style={styles.buttonContainerStyle}>
-            <Button
-              text="Back"
-              color='grey'
-              icon={ 'arrow-circle-left' }
-              width={ moderateScale(240,.2) }
-              fontSize={ moderateScale(20,.2) }
-              onPress={ props.closeShowImage } />
-          </View>
+        <Text style={styles.labelTextStyle}>LPN Photo  |  { moment(props.timestamp).format('MM-DD-YYYY h:mm a') }</Text>
+        <Image source={{ uri: props.sourcePrefix + props.lpn }} style={styles.imageStyle} />
 
-        </View>
-    )
+        <Text style={{ ...styles.labelTextStyle, marginTop: scale(10) }}>Load Photo  |  { moment(props.timestamp).format('MM-DD-YYYY h:mm a') }</Text>
+        <Image source={{ uri: props.sourcePrefix + props.load }} style={styles.imageStyle} />
+
+        { props.additional && props.additional.split(',').map( ( path, index ) => {
+            return (
+              <View key={ path }>
+                <Text style={{ fontSize: moderateScale(14, .2), fontWeight: 'bold', color: 'white', marginTop: scale(10) }}>
+                  Photo: { index + 3 }  |  { moment(props.timestamp).format('MM-DD-YYYY h:mm a') }
+                </Text>
+                <Image source={{ uri: props.sourcePrefix + path }} style={{ height: moderateScale(400,.5), width: moderateScale(240,.5), borderRadius: 5 }} />
+              </View>
+            )
+          }) }
+      </ScrollView>
+
+      <View style={styles.buttonContainerStyle}>
+        <Button
+          text="Back"
+          color='grey'
+          icon={ 'arrow-circle-left' }
+          width={ moderateScale(240,.2) }
+          fontSize={ moderateScale(20,.2) }
+          onPress={ props.closeShowImage } />
+      </View>
+    </View>
+  )
 }
 
 export default ListImageViewer;
 
 const styles = {
     containerStyle: {
-        position: 'absolute', 
-        top: 0, 
-        left: 0, 
-        width: '100%', 
-        height: '105%', 
-        zIndex: 10, 
-        alignItems: 'center', 
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 10,
+        alignItems: 'center',
         backgroundColor: 'rgba(0,0,0,0.8)'
     },
     scrollContainerStyle: {
-        paddingTop: moderateScale(20,.2), 
+        paddingTop: moderateScale(20,.2),
         paddingBottom: moderateScale(105,.4)
     },
     labelTextStyle: {
-        fontSize: moderateScale(14, .2), 
-        fontWeight: 'bold', 
+        fontSize: moderateScale(14, .2),
+        fontWeight: 'bold',
         color: 'white'
     },
     imageStyle: {
-        height: moderateScale(400,.5), 
-        width: moderateScale(240,.5), 
+        height: moderateScale(400,.5),
+        width: moderateScale(240,.5),
         borderRadius: 5
     },
     buttonContainerStyle: {
-        width: '100%', 
-        alignItems: 'center', 
-        position: 'absolute', 
-        bottom: 100, 
-        left: 0, 
-        right: 0, 
-        margin: 'auto', 
-        backgroundColor: 'rgba(255,255,255,0.9)', 
-        paddingBottom: 28, 
+        width: '100%',
+        alignItems: 'center',
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        margin: 'auto',
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        paddingBottom: 28,
         paddingTop: moderateScale(10,.2)
     }
 }
