@@ -33,7 +33,6 @@ const LoginScreen = ( props ) => {
   const handleSubmit = () => {
     if(online) {
       dispatch(actions.loginUser({ email: email.trim(), password: password.trim() }));
-      props.resetSyncTime();
     };
   };
 
@@ -48,12 +47,12 @@ const LoginScreen = ( props ) => {
     dispatch(actions.toggleLogin());
     dispatch(actions.closeKeyboard());
   };
-    
+
   return (
     <View style={ keyboardVisible ? styles.keyboardOpenStyle : styles.containerStyle }>
       <Image  style={ styles.logoStyle }
               source={ require('../../assets/gw-logo.jpg') } />
-      <Input 
+      <Input
         label="Email"
         placeholder="email@email.com"
         textContentType="emailAddress"
@@ -61,7 +60,7 @@ const LoginScreen = ( props ) => {
         value={ email }
         onFocus={ toggleKeyboard }
         onBlur={ toggleKeyboard } />
-      <Input 
+      <Input
         secureTextEntry
         label="Password"
         placeholder="password"
@@ -77,19 +76,19 @@ const LoginScreen = ( props ) => {
       }
 
       <View style={ styles.buttonContainerStyle }>
-        <Button 
-            onPress={ handleCancel } 
+        <Button
+            onPress={ handleCancel }
             text="Cancel" />
 
-        { loading ? 
+        { loading ?
             <Button
               color="lightgrey"
               borderColor="lightgrey" >
               <Spinner size="large" />
             </Button> :
-            <Button 
-              onPress={ handleSubmit } 
-              text="Login" 
+            <Button
+              onPress={ handleSubmit }
+              text="Login"
               color={ online ? 'black' : 'lightgrey' }
               borderColor={ online ? 'black' : 'lightgrey' } />
         }
@@ -124,8 +123,8 @@ export default LoginScreen;
       marginLeft: 'auto'
     },
     buttonContainerStyle: {
-      flexDirection: 'row', 
+      flexDirection: 'row',
       justifyContent: 'space-around'
     }
   };
-  
+

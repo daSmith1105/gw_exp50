@@ -1,4 +1,4 @@
-import { 
+import {
   TOGGLE_FLASH,
   CLEAR_FORM,
   HIDE_CAMERA,
@@ -9,7 +9,7 @@ import {
   RESET_REDUCER_GROUP // this is used when the app updates to a new version and we need to clear out the entire redux store
 } from '../actions/types';
 
-const INITIAL_STATE = { 
+const INITIAL_STATE = {
   type: 'back',      // this is the default setting for the camera - user cannot change currently
   ratio: '16:9',     // this is the default ratio for the camera - user cannot change currently
   autoFocus: true,   // this is the default setting for the camera - user cannot change currently
@@ -20,14 +20,7 @@ const INITIAL_STATE = {
 export default ( state = INITIAL_STATE, action ) => {
   switch ( action.type ) {
     case RESET_REDUCER_GROUP:
-      return {
-        ...state,
-        type: 'back', 
-        ratio: '16:9',
-        autoFocus: true, 
-        flash: 'auto',
-        showCamera: false
-      };
+      return {...INITIAL_STATE};
     case CLEAR_FORM:
       return {
         ...state,

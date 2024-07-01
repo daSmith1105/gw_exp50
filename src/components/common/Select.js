@@ -242,7 +242,6 @@ export default class Select extends Component {
     this.setState({
       selector: !this.state.selector
     }, () => {
-      console.log('selector', this.state.selector)
       if( this.state.selector == true ) {
         this.props.onPressElement();
       } else {
@@ -278,7 +277,7 @@ export default class Select extends Component {
     } = this.props;
     let newItems = [];
     let newSelectedItems = [];
-    const newItemName = this.state.searchTerm;
+    const newItemName = this.state.searchTerm.trim();
     if (newItemName) {
       const newItemId = newItemName
         .split(' ')
@@ -287,7 +286,7 @@ export default class Select extends Component {
       newItems = [...items, { [uniqueKey]: newItemId, name: newItemName }];
       newSelectedItems = [...selectedItems, newItemId];
       onAddItem(newItems);
-      // onSelectedItemsChange(newSelectedItems); 
+      // onSelectedItemsChange(newSelectedItems);
       this._toggleSelector();
       this._clearSearchTerm();
     }
@@ -373,7 +372,7 @@ export default class Select extends Component {
               {item[displayKey]}
             </Text>
             {this._itemSelected(item) ? (
-              // 
+              //
               null
             ) : null}
           </View>
@@ -447,7 +446,7 @@ export default class Select extends Component {
         <FlatList
           data={renderItems}
           extraData={selectedItems}
-          keyExtractor={item => item[uniqueKey].toString()}
+          keyExtractor={item => item[uniqueKey]}
           renderItem={rowData => this._getRow(rowData.item)}
           {...flatListProps}
         />
@@ -591,7 +590,7 @@ export default class Select extends Component {
                   onPress={() => this._submitSelection()}
                   style={[
                     styles.button,
-                    
+
                     { backgroundColor: submitButtonColor, height: 50 }
                   ]}
                 >
@@ -623,7 +622,7 @@ export default class Select extends Component {
                   styleDropdownMenuSubsection && styleDropdownMenuSubsection
                 ]}
               >
-                <TouchableWithoutFeedback onPress={ () => this._toggleSelector() } > 
+                <TouchableWithoutFeedback onPress={ () => this._toggleSelector() } >
                   <View
                     style={{
                       flex: 1,
@@ -667,7 +666,7 @@ export default class Select extends Component {
                 {this._displaySelectedItems()}
               </View>
             ) : null}
-            
+
           </View>
         )}
       </View>

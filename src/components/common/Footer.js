@@ -5,19 +5,18 @@ import { scale, moderateScale, verticalScale } from 'react-native-size-matters';
 import { FontAwesome } from '@expo/vector-icons';
 import * as actions from '../../actions';
 
-const Footer = props => {
-  
+const Footer = () => {
+
   const dispatch = useDispatch();
 
   const toggleSettings = () => {
     dispatch(actions.toggleSettingsMenu());
-    props.resetSyncTime()
   }
-  return (  
+  return (
     <View style={ styles.footerStyle }>
       <TouchableOpacity onPress={toggleSettings} >
-        <FontAwesome name="cog" 
-                     size={moderateScale(30, .3)} 
+        <FontAwesome name="cog"
+                     size={moderateScale(30, .3)}
                      color="grey" />
       </TouchableOpacity>
     </View>

@@ -1,210 +1,170 @@
 import React, {useState, useEffect} from 'react';
 import { View } from 'react-native';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler'
 import IntakeScreen from './src/screens/IntakeScreen';
 import Loading from './src/components/common/Loading';
 import { useSelector, useDispatch } from 'react-redux';
 import NetInfo from "@react-native-community/netinfo";
 import * as actions from './src/actions';
 
-// should syncing be done here or in redux state?
-// should sync functionality all be contained within its own component/logic?
-
-// TO DO: rework sync to be done in background and be more reliable
 const Main = (props) => {
+  const initialTap = Gesture.Tap().onBegin(() => { resetEventsSyncTime() })
 
-    // component state
-    const [dataSyncTimeout, setDataSyncTimeout] = useState(datainterval);
-    const [syncTimeout, setSyncTimeout] = useState(interval);
-    const [syncProgress, setSyncProgress] = useState(1);
-    const [syncing, setSyncing] = useState(false);
-    const [finishSync, setFinishSync] = useState(false);
+  // component state
+  const [syncState, setSyncState] = useState(0); // 0 - not syncing, 1 - ongoing sync, 2 - sync interrupted
+  const [tap, setTap] = useState(initialTap)
+  const [eventsIntState, setEventsIntState]  = useState(0)
+  const [dataIntState, setDataIntState] = useState(0)
 
-    const interval = 20; // attempt to sync events every 20 seconds if device is idle
-    const datainterval = 60 * 5; // attempt to get new app data - lpns,companies,people every 5 minutes rgardless of if device is idle : 60 sec * 5
-    let intervalID = 0;
-    let dataIntervalID = 0;
+  let eventsIntRef = 0;
+  let dataIntRef = 0;
+  const eventsIntTime = 20 * 1000; // (ms) attempt to sync events every 20 seconds if device is idle
+  const dataIntTime = 5 * 60 * 1000; // (ms) attempt to get new app data - lpns,companies,people every 5 minutes if devicce is not syncing events
+  let unsubscribe = null; // net info event listener
 
-    let unsubcribe = null; // net info event listener
+  // app state
+  const events = useSelector(state => state.data.events);
+  const lpns = useSelector(state => state.data.lpns);
+  const companies = useSelector(state => state.data.companies);
+  const people = useSelector(state => state.data.people);
+  const online = useSelector(state => state.data.online);
+  const userId = useSelector(state => state.user.userId);
+  const customerId = useSelector(state => state.user.customerId);
+  const gateId = useSelector(state => state.user.gateId);
+  const subscriberId = useSelector(state => state.user.subscriberId);
+  const webToken = useSelector(state => state.auth.webToken);
+  const isLoggedIn = useSelector(state => state.auth.isLoggedIn)
 
-    // app state
-    const events = useSelector(state => state.data.events);
-    const lpns = useSelector(state => state.data.lpns);
-    const companies = useSelector(state => state.data.companies);
-    const people = useSelector(state => state.data.people);
-    const online = useSelector(state => state.data.online);
-    const userId = useSelector(state => state.user.userId);
-    const customerId = useSelector(state => state.user.customerId);
-    const gateId = useSelector(state => state.user.gateId);
-    const subscriberId = useSelector(state => state.user.subscriberId);
-    const webToken = useSelector(state => state.auth.webToken);
-    const isLoggedIn = useSelector(state => state.auth.isLoggedIn)
-    
-    // dispatch
-    const dispatch = useDispatch();
+  // dispatch
+  const dispatch = useDispatch();
 
-    // run once on load, and cleanup on unmount
-    useEffect(() => {
-        if(isLoggedIn && online && customerId && webToken){
-            dispatch(actions.getAppData(customerId, webToken));
-        };
-        intervalID = setInterval(decrementSyncTimeout, 1000);
-        dataIntervalID = setInterval(decrementDataSyncTimeout, 1000);
-        // set net info event listener
-        unsubscribe = NetInfo.addEventListener(handleConnectionChange);
+  useEffect(() => {
+    // set net info event listener
+    const handleConnectionChange = (connectionInfo) => {
+      dispatch(actions.updateNetworkStatus(connectionInfo.isConnected))
+    }
+    unsubscribe = NetInfo.addEventListener(handleConnectionChange);
 
-        return () => {
-            clearInterval(intervalID);
-            clearInterval(dataIntervalID);
-            // remove net info event listener
-            unsubscribe();
-        };
-    }, []);
+    // as long as user is active on the app - we'll delay syncing
+    const t = Gesture.Tap().onBegin(() => { resetEventsSyncTime() })
+    setTap(t)
 
-  const handleConnectionChange = (connectionInfo) => {
-    dispatch(actions.updateNetworkStatus(connectionInfo.isConnected));
-  };
-
-  const decrementDataSyncTimeout = async () => {
-    if (dataSyncTimeout === 0) {
-      clearInterval(dataIntervalID);
-      // if we are not already syncing events and we are logged in and online - get new app data
-      if(syncing){
-        console.log('data sync aborted. already syncing events.');
-        // we will get updated data as part of the event sync process so just reset the data sync timer
-        resetDataSyncTime();
-        return;
-      };
-      if(isLoggedIn && online){
-        await dispatch(actions.getAppData(this.props.customerId,this.props.webToken));
-      };
-      // reset the timer
-      resetDataSyncTime();
-      return;
+    return () => {
+      clearInterval(eventsIntRef);
+      clearInterval(eventsIntState)
+      clearInterval(dataIntRef);
+      clearInterval(dataIntState)
+      unsubscribe(); // remove net info event listener
     };
-    // if we aren't at zero just decrement the timer
-    setDataSyncTimeout(dataSyncTimeout - 1);
-  };
+  }, [])
+
+  useEffect(() => {
+    // the main idea is - on every tap the sync resets
+    // problem #1:
+    // NOTE: this is not an issue, this is a known behavior when dealing with event listeners
+    //      the tap handler takes a "snapshot" of the events interval id when the handler was invoked,
+    //      so since it was declared on mount, events interval id at that time is 0/null
+    //      (whatever that is, it doesn't matter, the point is, the events interval id that the gesture handler "knows" is whatever the value is when it was invoked)
+    //      because of that, when the handler calls reset sync, it clears the interval 0, and creates a new one
+    //      so technically, nothing was cleared, and instead a new one is added, not a replacement, so the intervals piles up and the app becomes too bloated with background intervals
+    // solution #1:
+    //      put the events interval id in state, and create a useeffect, so that everytime the events interval id changes, we re-bind the gesture handler
+    //      so when a tap is made and it calls out reset, the reset can clear the correct/latest events interval id and a new one replaces the old interval
+    // problem #2:
+    // NOTE this is not an issue also, but a known behavior with useState and setInterval
+    //      now that events interval id is in state, setInterval() also takes a snapshot of the events interval id when it was invoked, which is 0
+    // solution #2: use state to re-bind tap gesture handler, use ref to clear interval
+
+    const t = Gesture.Tap().onBegin(() => { resetEventsSyncTime() })
+    setTap(t)
+  }, [eventsIntState])
+
+  useEffect(() => {
+    clearInterval(eventsIntRef);
+    clearInterval(eventsIntState)
+    clearInterval(dataIntRef);
+    clearInterval(dataIntState)
+
+    if (isLoggedIn && online && customerId && webToken) {
+      eventsIntRef = setInterval(syncEvents, eventsIntTime);
+      dataIntRef = setInterval(syncData, dataIntTime);
+      setEventsIntState(eventsIntRef)
+      setDataIntState(dataIntRef)
+    }
+  }, [isLoggedIn, online, customerId, webToken]);
+
+  useEffect(() => {
+    // main purpose of this effect is to continue syncing or refresh data if sync is done/interrupted
+
+    if ( events && events.length > 0 && syncState === 1 ) {
+      // if there are still events to push and there was no user interaction since the last event push, attempt another event push imediately
+      syncEvents();
+
+    } else if (syncState !== 0) {
+      // else if we were syncing but got interrupted by user events, or if there are no more events to sync
+      // lets refresh our data with the latest from db so user can continue using the app with updated data
+      resetEventsSyncTime()
+      resetDataSyncTime()
+      isLoggedIn && online && dispatch(actions.getAppData(customerId, webToken))
+      setSyncState(0)
+    }
+  }, [events])
+
+  const syncEvents = async () => {
+    if ((!events || events.length === 0)) {
+      return resetEventsSyncTime();
+    }
+
+    // we will pause data sync while we are syncing, anyway, we will be getting data once sync stops/pause
+    resetDataSyncTime()
+    clearInterval(eventsIntRef)
+    setSyncState(1)
+
+    // call sync function - this syncs one event only
+    await dispatch(actions.syncEvent( webToken, userId, gateId, subscriberId, customerId, lpns, companies, people, events ) );
+    // once this finishes, it will be caught by our useEffect for events, and it will be the one to handle resetting sync and refreshing data
+  }
+
+  const resetEventsSyncTime = () => {
+    clearInterval(eventsIntRef)
+    clearInterval(eventsIntState)
+    eventsIntRef = setInterval(syncEvents, eventsIntTime)
+    setEventsIntState(eventsIntRef)
+    setSyncState(2)
+  }
+
+  const syncData = async () => {
+    clearInterval(dataIntRef)
+
+    // if we are not already syncing events and we are logged in and online - get new app data
+    if (syncState === 0) {
+      await dispatch(actions.getAppData(customerId, webToken))
+    }
+
+    resetDataSyncTime()
+  }
 
   const resetDataSyncTime = () => {
-    if(dataIntervalID) { clearInterval(this.dataIntervalID) };
-    setDataSyncTimeout(datainterval);
-    dataIntervalID = setInterval(this.decrementDataSyncTimeout, 1000)
-  };
+    clearInterval(dataIntRef)
+    clearInterval(dataIntState)
+    dataIntRef = setInterval(syncData, dataIntTime);
+    setDataIntState(dataIntRef)
+  }
 
-  const decrementSyncTimeout = () => {
-    if (syncTimeout === 0) {
-      clearInterval(intervalID);
-      syncData();
-      return;
-    };
-    // if we aren't at zero just decrement the timer
-    setSyncTimeout(syncTimeout - 1);
-  };
-
-  const resetSyncTime = () => {
-    if(intervalID) { clearInterval(intervalID) };
-    setSyncing(false);
-    setFinishSync(true);
-    setSyncProgress(1);
-    setSyncTimeout(interval);
-    intervalID = setInterval(decrementSyncTimeout, 1000);
-  };
-
-  const clearSyncTime = () => {
-    if(intervalID) { clearInterval(intervalID) };
-    setSyncing(false);
-    setFinishSync(true);
-    setSyncProgress(1);
-    setSyncTimeout(interval);
-  };
-
-  const syncWithoutCheck = () => {
-    const sync = new Promise( (resolve, reject) => syncData( resolve, reject, webToken, userId, gateId, subscriberId, customerId, lpns, companies, people, events ) );
-    // wait for the sync function to finish then kick it off again in a bit    
-    sync.then( () => {
-      let p = syncProgress;
-      setSyncProgress(p + 1);
-        // if there was no user interaction since the last event push and we have additional events - attempt another event push imediately
-        if( events && events.length > 0 && syncTimeout === 0 && !finishSync ) {
-          syncWithoutCheck();
-          return;
-        };
-        // reset the timer
-        resetSyncTime();
-    })
-    .catch( error => {
-      console.log('the sync function returned with error. ', error);
-      resetSyncTime();
-    })
-  };
-
-  // when syncInterval is at 0 && user is Logged in && there is a network connection - run once then check user interaction and reset interval if necessary
-  // this function will sync local and network data
-  const syncData = async() => {
-      setSyncing(true);
-
-      // if we are forcing this we don't want it to run multiple times - clear the previous timer and set a new one
-      clearInterval(this.intervalID);
-
-      if(!isLoggedIn){
-        console.log('sync aborted. not logged in.')
-        // call this function again at syncTimer value
-        resetSyncTime();
-        return;
-      };
-
-      if(!online){
-        // call this function again at syncTimer value
-        console.log('sync aborted. no network connection.')
-        resetSyncTime();
-        return;
-      };
-
-      if((events && events.length < 1)){
-        console.log('sync aborted. no stored events.');
-        // call this function again at syncTimer value
-        resetSyncTime();
-        return;
-      }
-
-      // call sync function      
-      const sync = new Promise( (resolve, reject) => syncData( resolve, reject, webToken, userId, gateId, subscriberId, customerId, lpns, companies, people, events ) );
-      // wait for the sync function to finish then kick it off again in a bit    
-      sync.then( () => {
-        let p = syncProgress;
-        setSyncProgress(p + 1);
-        // if there was no user interaction since the last event push and we have additional events - attempt another event push imediately
-        if( events && events.length > 0 && syncTimeout === 0 && !finishSync ) {
-            syncWithoutCheck();
-            return
-        };
-        // reset the timer
-        resetSyncTime();
-      })
-      .catch( error => {
-        console.log('the sync function returned with error. ', error);
-        resetSyncTime();
-      })
-  };
-
-    return (
-        <View style={ styles.containerstyle }>
-            { props.isLoadingComplete ? 
-                <IntakeScreen   syncTimeout={ syncTimeout }
-                                resetSyncTime={ resetSyncTime }
-                                clearSyncTime={ clearSyncTime }
-                                syncData={ syncData } /> : 
-                <Loading />
-                }         
-        </View>
-    )
+  return (
+    <View style={ styles.containerstyle }>
+      <GestureDetector gesture={tap}>
+        { props.isLoadingComplete ? <IntakeScreen /> : <Loading /> }
+      </GestureDetector>
+    </View>
+  )
 }
 
 export default Main;
 
 const styles = {
-    containerStyle: {
-      flex: 1, 
-      marginTop: 30
-    }
-  };
+  containerStyle: {
+    flex: 1,
+    marginTop: 30
+  }
+};

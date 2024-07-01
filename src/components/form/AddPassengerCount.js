@@ -16,31 +16,22 @@ const AddPassengerCount = ( props ) => {
 
   // update the count on mount and when our app state is changed
   useEffect(() => {
-    setCurrentCount( passengerCount && passengerCount.length > 0 ? parseInt(passengerCount) : 0 );
+    setCurrentCount( passengerCount.toString() );
   }, [passengerCount]);
 
-  // on unmount - reset the component state
-  // on mount (above) we will set the state to the current passenger count
-  useEffect(() => {
-    return () => {
-      setCurrentCount(0);
-    }
-  }, []);
-
   const handleChangeText = text => {
-    props.resetSyncTime()
     setCurrentCount( parseInt(text) );
   };
 
   const handleCounterChange = (type) => {
-    props.resetSyncTime();
+    const count = parseInt(currentCount)
     switch (type) {
       case 'increment':
-        setCurrentCount( currentCount + 1 );
+        setCurrentCount( count + 1 );
         break;
       case 'decrement':
-        if( currentCount > 0 ) {
-          setCurrentCount( currentCount - 1 );
+        if ( count > 0 ) {
+          setCurrentCount( count - 1 );
         } else {
           setCurrentCount( 0 );
         }
@@ -51,14 +42,12 @@ const AddPassengerCount = ( props ) => {
   };
 
   const handleModalConfirm = () => {
-    dispatch(actions.handleInputChange( 'passengerCount', currentCountString ));
+    dispatch(actions.handleInputChange( 'passengerCount', currentCount));
     dispatch(actions.hideAddPassengerModal());
-    props.resetSyncTime();
   };
 
   const handleModalAbort = () => {
     dispatch(actions.hideAddPassengerModal());
-    props.resetSyncTime();
   };
 
   return (
@@ -71,7 +60,7 @@ const AddPassengerCount = ( props ) => {
               onAbort={ handleModalAbort } >
         <View style={ styles.counterStyle }>
           <View style={ styles.numberContainerStyle }>
-            <TextInput 
+            <TextInput
               style={{ fontSize: moderateScale(50,.2), textAlign: 'center' }}
               onChangeText={ text => handleChangeText(text) }
               value={ currentCount.toString() }
@@ -81,16 +70,16 @@ const AddPassengerCount = ( props ) => {
           </View>
 
           <View style={ styles.buttonContainerStyle }>
-            <Button 
-              width={ moderateScale(40,.2) } 
-              height={ moderateScale(40,.2) } 
+            <Button
+              width={ moderateScale(40,.2) }
+              height={ moderateScale(40,.2) }
               color={ 'grey' }
               icon={ 'plus' }
               onPress={ () => handleCounterChange('increment') }
             />
-            <Button 
-              width={ moderateScale(40,.2) } 
-              height={ moderateScale(40,.2) } 
+            <Button
+              width={ moderateScale(40,.2) }
+              height={ moderateScale(40,.2) }
               color={ 'grey' }
               icon={ 'minus' }
               onPress={ () => handleCounterChange('decrement') }

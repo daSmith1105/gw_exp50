@@ -1,4 +1,4 @@
-import { 
+import {
   CLEAR_FORM,
   HANDLE_INPUT_CHANGE,
   ADD_NEW_LPN,
@@ -16,14 +16,14 @@ import {
   RESET_REDUCER_GROUP // this is used when the app updates to a new version and we need to clear out the entire redux store
 } from '../actions/types';
 
-const INITIAL_STATE = { 
+const INITIAL_STATE = {
   uploading: false,
   formIncompleteError: false,
   lpnText: '',
   companyText: '',
   driverText: '',
   comment: '',
-  passengerCount: '', 
+  passengerCount: 0,
   isNewLpn: false,
   isNewCompany: false,
   isNewDriver: false,
@@ -31,9 +31,6 @@ const INITIAL_STATE = {
   selectedLpn: [],
   selectedCompany: [],
   selectedDriver: [],
-  currentLpn: [],
-  currentCompany: [],
-  currentDriver: [],
   imageType: '',
   lpnPhotoUri: '',
   loadPhotoUri: '',
@@ -50,160 +47,38 @@ const INITIAL_STATE = {
 export default ( state = INITIAL_STATE, action ) => {
   switch ( action.type ) {
     case RESET_REDUCER_GROUP:
-      return { 
-        ...state,
-        uploading: false,
-        formIncompleteError: false,
-        lpnText: '',
-        companyText: '',
-        driverText: '',
-        comment: '',
-        passengerCount: '', 
-        isNewLpn: false,
-        isNewCompany: false,
-        isNewDriver: false,
-        selectedEventType: [],
-        selectedLpn: [],
-        selectedCompany: [],
-        selectedDriver: [],
-        currentLpn: [],
-        currentCompany: [],
-        currentDriver: [],
-        imageType: '',
-        lpnPhotoUri: '',
-        loadPhotoUri: '',
-        loadPhoto: '',
-        lpnPhoto: '',
-        currentPhoto: '',
-        photoCount: 0,
-        maxAdditionalPhotos: 6,
-        additionalPhotos: [],
-        maxPhotosReached: false,
-        additionalPhotosForUpload: []
-       };
     case PURGE_ALL_DATA:
-      return {
-        uploading: false,
-        formIncompleteError: false,
-        lpnText: '',
-        companyText: '',
-        driverText: '',
-        comment: '',
-        passengerCount: '', 
-        isNewLpn: false,
-        isNewCompany: false,
-        isNewDriver: false,
-        selectedEventType: [],
-        selectedLpn: [],
-        selectedCompany: [],
-        selectedDriver: [],
-        currentLpn: [],
-        currentCompany: [],
-        currentDriver: [],
-        imageType: '',
-        lpnPhotoUri: '',
-        loadPhotoUri: '',
-        loadPhoto: '',
-        lpnPhoto: '',
-        currentPhoto: '',
-        photoCount: 0,
-        maxAdditionalPhotos: 6,
-        additionalPhotos: [],
-        maxPhotosReached: false,
-        additionalPhotosForUpload: []
-      };
     case CLEAR_FORM:
-      return {
-        uploading: false,
-        formIncompleteError: false,
-        lpnText: '',
-        companyText: '',
-        driverText: '',
-        comment: '',
-        passengerCount: '', 
-        isNewLpn: false,
-        isNewCompany: false,
-        isNewDriver: false,
-        selectedEventType: [],
-        selectedLpn: [],
-        selectedCompany: [],
-        selectedDriver: [],
-        currentLpn: [],
-        currentCompany: [],
-        currentDriver: [],
-        imageType: '',
-        lpnPhotoUri: '',
-        loadPhotoUri: '',
-        loadPhoto: '',
-        lpnPhoto: '',
-        currentPhoto: '',
-        photoCount: 0,
-        maxAdditionalPhotos: 6,
-        additionalPhotos: [],
-        maxPhotosReached: false,
-        additionalPhotosForUpload: []
-      };
-    case LOGOUT_USER: 
-      return {
-        uploading: false,
-        formIncompleteError: false,
-        lpnText: '',
-        companyText: '',
-        driverText: '',
-        comment: '',
-        passengerCount: '', 
-        isNewLpn: false,
-        isNewCompany: false,
-        isNewDriver: false,
-        selectedEventType: [],
-        selectedLpn: [],
-        selectedCompany: [],
-        selectedDriver: [],
-        currentLpn: [],
-        currentCompany: [],
-        currentDriver: [],
-        imageType: '',
-        lpnPhotoUri: '',
-        loadPhotoUri: '',
-        loadPhoto: '',
-        lpnPhoto: '',
-        currentPhoto: '',
-        photoCount: 0,
-        maxAdditionalPhotos: 6,
-        additionalPhotos: [],
-        maxPhotosReached: false,
-        additionalPhotosForUpload: []
-      }
-    case HANDLE_INPUT_CHANGE: 
+    case LOGOUT_USER:
+      return {...INITIAL_STATE}
+
+    case HANDLE_INPUT_CHANGE:
       return {
         ...state,
         [ action.name ]: action.value
       };
-    case ADD_NEW_LPN: 
+    case ADD_NEW_LPN:
       return {
         ...state,
         selectedLpn: ['0'],
         selectedCompany: [],
         selectedDriver: [],
-        currentLpn: [],
-        currentCompany: [],
-        currentDriver: [],
-        passengers: [] 
+        passengers: []
       };
-    case ADD_NEW_COMPANY: 
+    case ADD_NEW_COMPANY:
       return {
         ...state,
         selectedCompany: ['0'],
         selectedDriver: [],
-        passengers: [] 
+        passengers: []
       };
     case ADD_NEW_DRIVER:
       return {
         ...state,
         selectedDriver: ['0'],
-        passengers: [] 
+        passengers: []
       };
-    case SHOW_CAMERA: 
+    case SHOW_CAMERA:
       return {
         ...state,
         imageType: action.name
@@ -221,12 +96,12 @@ export default ( state = INITIAL_STATE, action ) => {
         formIncompleteError: true,
         uploading: false
       };
-    case TAKE_PHOTO_SUCCESS: 
+    case TAKE_PHOTO_SUCCESS:
       return {
         ...state,
         [ action.label + 'PhotoUri' ] : action.path
       };
-    case SAVE_ADDITIONAL_PHOTO: 
+    case SAVE_ADDITIONAL_PHOTO:
         const newPhoto = { id: action.id, label: action.label, path: action.path };
         if ( state.photoCount + 1 < state.maxAdditionalPhotos && state.maxPhotosReached === false ) {
         return {
@@ -263,6 +138,5 @@ export default ( state = INITIAL_STATE, action ) => {
         };
       default:
         return state;
-    }; 
+    };
 };
-  

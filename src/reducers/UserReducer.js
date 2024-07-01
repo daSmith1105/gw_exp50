@@ -1,4 +1,4 @@
-import { 
+import {
   LOGIN_USER_SUCCESS,
   GET_ASSIGNMENT_DATA_SUCCESS,
   GET_ASSIGNMENT_DATA_FAIL,
@@ -6,7 +6,7 @@ import {
   RESET_REDUCER_GROUP // this is used when the app updates to a new version and we need to clear out the entire redux store
 } from '../actions/types';
 
-const INITIAL_STATE = { 
+const INITIAL_STATE = {
   userFullName: '',
   firstName: '',
   lastName: '',
@@ -26,27 +26,9 @@ const INITIAL_STATE = {
 
 export default ( state = INITIAL_STATE, action ) => {
   switch ( action.type ) {
-    case RESET_REDUCER_GROUP:
-      return { 
-        ...state,
-        userFullName: '',
-        firstName: '',
-        lastName: '',
-        customerName: '',
-        customerId: '',
-        subscriberName: '',
-        subscriberId: '',
-        userId: '',
-        authId: '',
-        assignmentId: '',
-        gateName: '',
-        gateId: '',
-        siteId: '',
-        siteName: ''
-       };
-    case LOGIN_USER_SUCCESS: 
+    case LOGIN_USER_SUCCESS:
       const user = action.payload;
-      return {  
+      return {
         ...state,
         userFullName: user.sFirst + ' ' + user.sLast,
         firstName: user.sFirst,
@@ -67,38 +49,23 @@ export default ( state = INITIAL_STATE, action ) => {
     // i dont think this is being used anywhere - cleanup in future
     case GET_ASSIGNMENT_DATA_SUCCESS :
       const data = action.payload;
-      return { 
+      return {
         ...state,
         gateId: data.Gate.id,
         gateName: data.Gate.sName
       }
     // i dont think this is being used anywhere - cleanup in future
     case GET_ASSIGNMENT_DATA_FAIL :
-      return { 
+      return {
         ...state,
         gateId: 0,
         gateName: 'No Gate Assignment',
         siteId: 0,
         siteName: 'No Site Found'
       };
+    case RESET_REDUCER_GROUP:
     case LOGOUT_USER:
-      return {
-        userFullName: '',
-        firstName: '',
-        lastName: '',
-        customerName: '',
-        customerId: '',
-        subscriberName: '',
-        subscriberId: '',
-        userId: '',
-        authId: '',
-        assignmentId: '',
-        gateName: '',
-        gateId: '',
-        siteName: '',
-        siteId: '',
-        fRequirePhotos: true
-      };
+      return {...INITIAL_STATE};
     default:
       return state;
   };

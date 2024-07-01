@@ -48,25 +48,19 @@ const SettingsMenu = ( props ) => {
 
   // run once on mount
   useEffect(() => {
-    // if we are not online this will hit the 'else' log
-    if(gateId && parseInt(gateId) !== 0){
+    if (gateId && parseInt(gateId) !== 0) {
       dispatch(actions.getOnsiteCountBySite(siteId, webToken));
+    } else {
+      dispatch(actions.setOnsiteCountByLocalEvents());
     }
-    setShowReportSendConfirmation(false);
-    // cleanup on unmount
-    return () => { 
-      setShowReportSendConfirmation(false);
-    };
   }, []);
 
 
   const handleLogout = () => {
-    props.resetSyncTime();
     dispatch(actions.logoutUser(userId, 'logging out with this device'));
   };
 
   const handleErrorReport = () => {
-    props.resetSyncTime();
     setShowReportSendConfirmation(true);
   };
 
@@ -103,16 +97,16 @@ const SettingsMenu = ( props ) => {
     setEventListError(false);
     let p = 1;
     if(page){ p = page };
-  
+
     if(siteId){
       await axios({
         method: 'get',
         headers: {
           'Content-Accept': 'application-json',
-          'Authorization': 'JWT ' + webToken
+          'Authorization': webToken
         },
-        url: `${API_URL}api/mobileeventsbysite/${siteId}/${p}?start=${start}&end=${end}&type=${type}&lpn=${lpn}&company=${company}&driver=${driver}&i=${id}`, 
-        timeout: 15000 
+        url: `${API_URL}api/mobileeventsbysite/${siteId}/${p}?start=${start}&end=${end}&type=${type}&lpn=${lpn}&company=${company}&driver=${driver}&i=${id}`,
+        timeout: 15000
       })
       .then( response => {
         if(!response || !response.data){
@@ -138,12 +132,10 @@ const SettingsMenu = ( props ) => {
   };
 
   const clearErrorReportConfirmationModal = () => {
-    props.resetSyncTime();
     setShowReportSendConfirmation(false);
   };
 
   const clearErrorReportStatusModal = () => {
-    props.resetSyncTime();
     dispatch(actions.closeReportModal());
   };
 
@@ -157,7 +149,7 @@ const SettingsMenu = ( props ) => {
 
         <OnsiteCount />
 
-        <PendingEvents clearSyncTime={props.resetSyncTime} />
+        <PendingEvents />
 
         {isLoggedIn &&
           <View style={{ width: '100%' }}>
@@ -171,7 +163,7 @@ const SettingsMenu = ( props ) => {
                 fontSize={ moderateScale(20,.2) }
                 onPress={ toggleEventList }
               />
-            </RowSection> 
+            </RowSection>
 
             <RowSection>
                 <Button
@@ -183,7 +175,7 @@ const SettingsMenu = ( props ) => {
                     fontSize={ moderateScale(20,.2) }
                   />
             </RowSection>
-     
+
             <RowSection>
               <View style={{ flexDirection: 'column', alignItems: 'center' }}>
                 <Button
@@ -196,13 +188,13 @@ const SettingsMenu = ( props ) => {
                 />
               </View>
             </RowSection>
-          </View> 
+          </View>
         }
 
         {!isLoggedIn &&
-          <LoginButton resetSyncTime={props.resetSyncTime} />
+          <LoginButton />
         }
-        
+
         {/* close button  */}
         <View style={{ position: 'absolute', top: 0, left: 0 }}>
           <Button
@@ -210,24 +202,24 @@ const SettingsMenu = ( props ) => {
             icon={ 'arrow-circle-left' }
             width={ moderateScale(40,.2) }
             fontSize={ moderateScale(20,.2) }
-            onPress={ () => { dispatch(actions.toggleSettingsMenu()); props.resetSyncTime() } } />
+            onPress={ () => { dispatch(actions.toggleSettingsMenu()) } } />
         </View>
 
       </View>
 
-      { !sendingReport && showReportSendConfirmation && 
-          <ErrorReporting  onAbort={clearErrorReportConfirmationModal} />
+      { !sendingReport && showReportSendConfirmation &&
+          <ErrorReporting  onAbort={clearErrorReportConfirmationModal} setShowReportSendConfirmation={setShowReportSendConfirmation} />
       }
-    
+
       { showEventList &&
           <EventList  toggleEventList={toggleEventList}
                       allGateEvents={allGateEvents}
                       count={count}
                       currentPage={currentPage}
-                      pages={pages} 
+                      pages={pages}
                       getAllGateEvents={getAllGateEvents}
                       eventListLoading={eventListLoading}
-                      eventListError={eventListError} /> 
+                      eventListError={eventListError} />
       }
 
       {/* error report send status modal(s)  */}
@@ -253,7 +245,7 @@ const styles = {
   listStyle: {
     position: 'relative',
     top: 10,
-    left: '2.5%', 
+    left: '2.5%',
     backgroundColor: 'white',
     width: '95%',
     height: Dimensions.get('window').height - 50,

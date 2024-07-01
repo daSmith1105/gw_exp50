@@ -1,4 +1,4 @@
-import { 
+import {
   LOGIN_USER_START,
   LOGIN_USER_SUCCESS,
   LOGIN_USER_FAIL,
@@ -7,10 +7,10 @@ import {
   RESET_REDUCER_GROUP // this is used when the app updates to a new version and we need to clear out the entire redux store
 } from '../actions/types';
 
-const INITIAL_STATE = { 
+const INITIAL_STATE = {
   isLoggedIn: false,
   userId: '',
-  email: '', 
+  email: '',
   password: '',
   webToken: '',
   loading: false,
@@ -20,48 +20,31 @@ const INITIAL_STATE = {
 export default ( state = INITIAL_STATE, action ) => {
   switch ( action.type ) {
     case RESET_REDUCER_GROUP:
+      return {...INITIAL_STATE};
+    case LOGIN_USER_START:
       return {
         ...state,
-        isLoggedIn: false,
-        userId: '',
-        email: '', 
-        password: '',
-        webToken: '',
-        loading: false,
-        error: ''
-      };
-    case LOGIN_USER_START:
-      return { 
-        ...state, 
-        loading: true, error: '' 
+        loading: true, error: ''
       }
     case LOGIN_USER_SUCCESS:
-      return {  
-        ...state, 
-        webToken: 'JWT ' + action.token, 
-        userId: action.id,
+      return {
+        ...state,
+        webToken: 'JWT ' + action.payload.token,
+        userId: action.payload.id,
         isLoggedIn: true,
         loading: false,
-        email: action.username,
+        email: action.payload.username,
         password: ''
       }
     case LOGIN_USER_FAIL:
-      return { 
-        ...state, 
-        error: 'Authentication Failed.', 
-        password: '', 
-        loading: false 
+      return {
+        ...state,
+        error: 'Authentication Failed.',
+        password: '',
+        loading: false
       }
     case LOGOUT_USER:
-        return {
-          isLoggedIn: false,
-          userId: '',
-          email: '', 
-          password: '',
-          webToken: '',
-          loading: false,
-          error: ''
-        }
+        return {...INITIAL_STATE}
     case CLEAR_LOGIN_ERROR:
       return {
         ...state,
