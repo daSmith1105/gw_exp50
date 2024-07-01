@@ -5,6 +5,7 @@ import {
   GET_DATA_SUCCESS,
   GET_DATA_FAIL,
   SET_ONSITE_COUNT,
+  SET_UPLOADING,
 } from './types';
 
 const API_URL = config.backend;
@@ -72,5 +73,12 @@ export const setOnsiteCountByLocalEvents = () => {
     type: SET_ONSITE_COUNT,
     vehicleCount: 0,
     peopleCount: 0,
+  }
+}
+
+export const setUploading = (value) => {
+  return {
+    type: SET_UPLOADING,
+    payload: value,
   }
 }

@@ -63,7 +63,7 @@ const EventList = (props) => {
     let limit = 10
     let getMore = false
     let pendingData = {events: [], count: 0}
-    let serverData = {events: [], count: 0, error: false}
+    let uploadedData = {events: [], count: 0, error: false}
     let eventList = []
 
     let searchParams = {
@@ -79,25 +79,25 @@ const EventList = (props) => {
     }
 
     if (searchParams.status !== 2) {
-      // get pending events as long as we are not filtering specifically for synced events only (status = 2)
+      // get pending events as long as we are not filtering specifically for uploaded events only (status = 2)
       pendingData = getPendingEvents(page, searchParams)
       eventList = pendingData.events
     }
 
     if (pendingData.count < (page * limit)) {
-      // we only display 10 events in a page, so determine if we still have slots for server events depending on our current pending events count
+      // we only display 10 events in a page, so determine if we still have slots for uploaded events depending on our current pending events count
       getMore = true
 
-      // these handles properly getting server events per page
+      // these handles properly getting uploaded events per page
       offset = Math.max(0, (page * limit) - pendingData.count - limit)
       limit = Math.min(limit, (page * limit) - pendingData.count)
     }
 
     if (searchParams.status !== 1) {
-      // get server events as long as we are not filtering specifically for pending events only (status = 1)
-      serverData = await getServerEvents(offset, limit, searchParams)
+      // get uploaded events as long as we are not filtering specifically for pending events only (status = 1)
+      uploadedData = await getUploadedEvents(offset, limit, searchParams)
 
-      if (serverData.error) {
+      if (uploadedData.error) {
         // if there's error in the server, let's bail out
         setEventListError(true)
         setCount(0)
@@ -106,14 +106,14 @@ const EventList = (props) => {
         return
       }
 
-      // if we still have slots to show server events, add it in the list
+      // if we still have slots to show uploaded events, add it in the list
       if (getMore) {
         if (eventList.length) {
-          for (let i = 0; i < serverData.events.length; i++) {
-            eventList = insertSorted(eventList, serverData.events[i], 'eventTimestamp', 'desc')
+          for (let i = 0; i < uploadedData.events.length; i++) {
+            eventList = insertSorted(eventList, uploadedData.events[i], 'eventTimestamp', 'desc')
           }
         } else {
-          eventList = serverData.events
+          eventList = uploadedData.events
         }
       }
     }
@@ -124,7 +124,7 @@ const EventList = (props) => {
       setEndDate(new Date(lastTs))
     }
 
-    const eventCount = pendingData.count + serverData.count
+    const eventCount = pendingData.count + uploadedData.count
     setCount(eventCount)
     setPages(Math.ceil(eventCount / 10))
     setAllEvents(eventList)
@@ -177,8 +177,8 @@ const EventList = (props) => {
     return {events: list, count}
   }
 
-  const getServerEvents = async (offset, limit, searchParams) => {
-    let serverData = {events: [], count: 0, error: false}
+  const getUploadedEvents = async (offset, limit, searchParams) => {
+    let uploadedData = {events: [], count: 0, error: false}
     let params = {
       ...searchParams,
       offset,
@@ -199,16 +199,16 @@ const EventList = (props) => {
 
       }).then( response => {
         let res = response.data;
-        serverData.events = res.result
-        serverData.count = res.count
+        uploadedData.events = res.result
+        uploadedData.count = res.count
 
       }).catch( (error) => {
         console.log(error)
-        serverData.error = true
+        uploadedData.error = true
       })
     }
 
-    return serverData
+    return uploadedData
   }
 
   const formatDate = (date) => {

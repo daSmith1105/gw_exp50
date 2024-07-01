@@ -60,7 +60,7 @@ const ListFilter = (props) => {
 
         <SingleSelect
             label="Status:"
-            items={ [ { id: '', name: "ALL" }, { id: 1, name: "Pending" }, { id: 2, name: "Synced" } ] }
+            items={ [ { id: '', name: "ALL" }, { id: 1, name: "Pending" }, { id: 2, name: "Uploaded" } ] }
             onSelectedItemsChange={ option => props.handleFilterChange('status',option) }
             selectedItems={ props.selectedStatus }
             selectText="select status"
