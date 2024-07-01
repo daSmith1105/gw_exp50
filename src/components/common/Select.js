@@ -7,8 +7,6 @@ import {
   TouchableOpacity,
   FlatList
 } from 'react-native';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
-import PropTypes from 'prop-types';
 import reject from 'lodash/reject';
 import find from 'lodash/find';
 import get from 'lodash/get';
@@ -23,54 +21,6 @@ export default class Select extends Component {
     if (prevProps.reset !== this.props.reset && this.props.reset) {
       this._clearSelector();
     }
-  };
-
-  static propTypes = {
-    single: PropTypes.bool,
-    selectedItems: PropTypes.array,
-    items: PropTypes.array.isRequired,
-    uniqueKey: PropTypes.string,
-    tagBorderColor: PropTypes.string,
-    tagTextColor: PropTypes.string,
-    fontFamily: PropTypes.string,
-    tagRemoveIconColor: PropTypes.string,
-    onSelectedItemsChange: PropTypes.func.isRequired,
-    selectedItemFontFamily: PropTypes.string,
-    selectedItemTextColor: PropTypes.string,
-    itemFontFamily: PropTypes.string,
-    itemTextColor: PropTypes.string,
-    itemFontSize: PropTypes.number,
-    selectedItemIconColor: PropTypes.string,
-    searchInputPlaceholderText: PropTypes.string,
-    searchInputStyle: PropTypes.object,
-    selectText: PropTypes.string,
-    styleDropdownMenu: ViewPropTypes.style,
-    styleDropdownMenuSubsection: ViewPropTypes.style,
-    styleInputGroup: ViewPropTypes.style,
-    styleItemsContainer: ViewPropTypes.style,
-    styleListContainer: ViewPropTypes.style,
-    styleMainWrapper: ViewPropTypes.style,
-    styleRowList: ViewPropTypes.style,
-    styleSelectorContainer: ViewPropTypes.style,
-    styleTextDropdown: Text.propTypes.style,
-    styleSubmitContainer: ViewPropTypes.style,
-    altFontFamily: PropTypes.string,
-    hideSubmitButton: PropTypes.bool,
-    hideDropdown: PropTypes.bool,
-    submitButtonColor: PropTypes.string,
-    submitButtonText: PropTypes.string,
-    textColor: PropTypes.string,
-    fontSize: PropTypes.number,
-    fixedHeight: PropTypes.bool,
-    hideTags: PropTypes.bool,
-    canAddItems: PropTypes.bool,
-    onAddItem: PropTypes.func,
-    onPressElement: PropTypes.func,
-    onBlurElement: PropTypes.func,
-    onChangeInput: PropTypes.func,
-    displayKey: PropTypes.string,
-    textInputProps: PropTypes.object,
-    flatListProps: PropTypes.object
   };
 
   static defaultProps = {
