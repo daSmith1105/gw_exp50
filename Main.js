@@ -28,7 +28,6 @@ const Main = (props) => {
   const companies = useSelector(state => state.data.companies);
   const people = useSelector(state => state.data.people);
   const online = useSelector(state => state.data.online);
-  const fUseNames = useSelector(state => state.user.fUseNames)
   const userId = useSelector(state => state.user.userId);
   const customerId = useSelector(state => state.user.customerId);
   const siteId = useSelector(state => state.user.siteId);
@@ -124,7 +123,7 @@ const Main = (props) => {
     setSyncState(1)
 
     // call sync function - this syncs one event only
-    await dispatch(actions.syncEvent( maxSyncRetry, fUseNames, webToken, userId, siteId, gateId, subscriberId, customerId, lpns, companies, people, events, false ) );
+    await dispatch(actions.syncEvent( maxSyncRetry, webToken, userId, siteId, gateId, subscriberId, customerId, lpns, companies, people, events, false ) );
     // once this finishes, it will be caught by our useEffect for events, and it will be the one to handle resetting sync and refreshing data
   }
 

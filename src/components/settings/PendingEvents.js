@@ -17,7 +17,6 @@ const PendingEvents = (props) => {
     const uploading = useSelector(state => state.data.uploading);
     const webToken = useSelector(state => state.auth.webToken);
     const userId = useSelector(state => state.user.userId);
-    const fUseNames = useSelector(state => state.user.fUseNames);
     const customerId = useSelector(state => state.user.customerId);
     const subscriberId = useSelector(state => state.user.subscriberId);
     const siteId = useSelector(state => state.user.siteId);
@@ -52,7 +51,7 @@ const PendingEvents = (props) => {
             processedIds.push(eventId)
             setProcessedEvents(processedIds)
 
-            await dispatch(actions.syncEvent( maxSyncRetry, fUseNames, webToken, userId, siteId, gateId, subscriberId, customerId, lpns, companies, people, events, index ) )
+            await dispatch(actions.syncEvent( maxSyncRetry, webToken, userId, siteId, gateId, subscriberId, customerId, lpns, companies, people, events, index ) )
             // events useEffect will continue uploading the rest of the events
         } else {
             setProcessedEvents([])

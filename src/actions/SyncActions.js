@@ -197,8 +197,8 @@ const updateLocalIds = (lpnList, companyList, peopleList, eventList, eventObj, d
 // this syncs one event at a time as such, we aim to make it as lightweight as possible
 // so for each iteration of an event in the pending list, we will only do what's necessary (sync a local event to server - still making sure of data integrity and no duplicates)
 // and handle other functionalities outside the iteration (getting updated list)
-export const syncEvent = (maxSyncRetry, fUseNames, webToken, userId, siteId, gate, subscriberId, customerId, lpns, companies, people, events, priorityEventIndex) => {
-  // console.log('syncEvent action start', {maxSyncRetry, fUseNames, webToken, userId, siteId, gate, subscriberId, customerId, lpns, companies, people, events, priorityEventIndex})
+export const syncEvent = (maxSyncRetry, webToken, userId, siteId, gate, subscriberId, customerId, lpns, companies, people, events, priorityEventIndex) => {
+  // console.log('syncEvent action start', {maxSyncRetry, webToken, userId, siteId, gate, subscriberId, customerId, lpns, companies, people, events, priorityEventIndex})
 
   // upload one event at a time - start from the very first not synced event
     // upload photos - this is separate API
@@ -261,18 +261,19 @@ export const syncEvent = (maxSyncRetry, fUseNames, webToken, userId, siteId, gat
       sDriverFirst: driverName.first,
       sDriverLast: driverName.last,
       passengers: [],
-      passengerCount: fUseNames ? 0 : eventObj.passengerCount, // to ensure data consistency, we will initialize this with 0 if names are required, and the value will be updated when we also already have our passenger names
+      passengerCount: 0,
       sLpnPhoto: '',
       sLoadPhoto: '',
       images: '',
       sComment: eventObj.comment,
-      fUseNames: fUseNames,
     }
 
     try {
-      if (fUseNames && eventObj.passengers) {
+      if (eventObj.passengers && eventObj.passengers.length) {
         eventData.passengers = people.filter(p => eventObj.passengers.includes(p.id)).map(p => { return {...parseName(p.name), id: p.id}})
         eventData.passengerCount = eventData.passengers.length
+      } else {
+        eventData.passengerCount = eventObj.passengerCount
       }
 
       // upload photos - if for some reason the photo uploads fail, let's continue
@@ -324,7 +325,7 @@ export const syncEvent = (maxSyncRetry, fUseNames, webToken, userId, siteId, gat
         // reportError will be responsible for updating our events state depending on when it fails/succeed
         eventList[eventIndex].failedCount++
         eventList[eventIndex].error = eventData.error = error.message
-        await dispatch(reportError(fUseNames, webToken, `Sync failed: ${error.message}`, subId, custId, stId, userId, gateId, peopleList, [eventData], eventList, eventObj.id))
+        await dispatch(reportError(webToken, `Sync failed: ${error.message}`, subId, custId, stId, userId, gateId, peopleList, [eventData], eventList, eventObj.id))
       }
 
       // if error happened after API call (somewhere in the axios "then"), then no need to report, it's already in the server
