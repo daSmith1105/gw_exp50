@@ -113,13 +113,23 @@ const EventList = (props) => {
   }
 
   const getAllEvents = async (page, searchParams) => {
-    let type = !searchParams || !searchParams.type || searchParams.type === 'all' ? null : searchParams.type;
-    let lpn = !searchParams || !searchParams.lpn || searchParams.lpn === 'all' ? null : searchParams.lpn;
-    let company = !searchParams || !searchParams.company || searchParams.company === 'all' ? null : searchParams.company;
-    let driver = !searchParams || !searchParams.driver || searchParams.driver === 'all' ? null : searchParams.driver;
-    let start = !searchParams || !searchParams.start ? formatDate(new Date(moment().subtract(7, 'days')),'start') : formatDate(searchParams.start,'start');
-    let end = !searchParams || !searchParams.end ? formatDate(new Date()) : formatDate(searchParams.end);
     let id = makeId(4); // id is added to the query so we allways get new data from the server - not 304 data cached
+    let type = ''
+    let lpn = ''
+    let company = ''
+    let driver = ''
+    let start = ''
+    let end = ''
+
+    if (searchParams) {
+      // list filter is currently unused - review this once we apply list filtering
+      type = searchParams.type !== 'all' ? searchParams.type : ''
+      lpn = searchParams.lpn !== 'all' ? searchParams.lpn : ''
+      company = searchParams.company !== 'all' ? searchParams.company : ''
+      driver = searchParams.driver !== 'all' ? searchParams.driver : ''
+      start = formatDate(searchParams.start);
+      end = formatDate(searchParams.end);
+    }
 
     let p = 1;
     if(page){ p = page };
@@ -158,12 +168,9 @@ const EventList = (props) => {
   const formatDate = (date, type) => {
     let d = new Date(date);
     let year = d.getFullYear();
-    let month = ('0' + (d.getMonth() + 1)).slice(-2);
-    let day = ('0' + d.getDate()).slice(-2);
-    let hour = type && type === 'start' ? '00' : '23';
-    let minute = type && type === 'start' ? '00' : '59';
-    let second = type && type === 'start' ? '00' : '59';
-    return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+    let month = (d.getMonth() + 1).toString().padStart(2, 0)
+    let day = (d.getDate()).toString().padStart(2, 0)
+    return `${year}-${month}-${day}`;
   };
 
   const makeId = (length) => {
@@ -184,11 +191,6 @@ const EventList = (props) => {
       )
     }
   };
-
-  const keyExtractor = (item, index) => {
-    // key extractor for items in flatlist
-    item.eventTimestamp + '.' + index;
-  }
 
   const viewEventImages = ( lpn, load, add, timestamp ) => {
     setLpn(lpn);
@@ -299,7 +301,7 @@ const EventList = (props) => {
             && <FlatList
                 data={ allEvents }
                 renderItem={ renderItem }
-                keyExtractor={ keyExtractor } />
+                keyExtractor={(_, index) => index } />
       }
 
       { showImages &&
