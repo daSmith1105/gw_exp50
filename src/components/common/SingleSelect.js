@@ -17,7 +17,7 @@ const SingleSelect = ( props ) => {
               onPress={ props.onPress }
               single={ true }
               items={ props.items }
-              uniqueKey="id"
+              uniqueKey={ props.uniqueKey || "id" }
               displayKey="name"
               onSelectedItemsChange={ props.onSelectedItemsChange }
               selectedItems={ props.selectedItems }
