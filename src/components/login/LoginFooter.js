@@ -17,9 +17,9 @@ export default LoginFooter;
 
 const styles = {
   containerStyle: {
-    flexDirection: 'row', 
+    flexDirection: 'row',
     position: 'absolute',
-    bottom: verticalScale(20),
+    bottom: verticalScale(40),
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%'
@@ -30,7 +30,7 @@ const styles = {
     fontWeight: 'bold'
   },
   imageStyle: {
-    height: moderateScale(32, .5), 
+    height: moderateScale(32, .5),
     width: moderateScale(176, .5)
   }
 };

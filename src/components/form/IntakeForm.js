@@ -6,12 +6,13 @@ import PhotoButton from './PhotoButton';
 import { View, ScrollView } from 'react-native';
 import { scale, moderateScale, verticalScale } from 'react-native-size-matters';
 import makeId from '../../utility/makeId';
+import getUniqueValue from '../../utility/getUniqueValue';
 import * as actions from '../../actions';
 
 const IntakeForm = (props) => {
     // app state
     const {lpns, companies, people, saveEventFail, saveEventSuccess, eventSaving} = useSelector(state => state.data);
-    const {userId, customerId, gateId, subscriberId, fRequirePhotos} = useSelector(state => state.user);
+    const {userId, customerId, siteId, gateId, subscriberId, fRequirePhotos} = useSelector(state => state.user);
     const {selectedEventType,
            selectedLpn,
            selectedCompany,
@@ -20,6 +21,7 @@ const IntakeForm = (props) => {
            companyText,
            driverText,
            passengerCount,
+           passengers,
            comment,
            lpnPhotoUri,
            loadPhotoUri,
@@ -53,18 +55,9 @@ const IntakeForm = (props) => {
     }, [selectedLpn, selectedCompany])
 
     useEffect(() => {
-        const uniqueDriver = getUniqueDriverNames(selectedDriver[0])
+        const uniqueDriver = getUniqueValue(people, 'name', selectedDriver)
         setUniquePeople(uniqueDriver)
     }, [people])
-
-    const getUniqueDriverNames = (driverId) => {
-        return Object.values(people.reduce((arr, obj) => {
-            if (!arr[obj.name] || obj.id == driverId) {
-                arr[obj.name] = obj
-            }
-            return arr
-        }, {}))
-    }
 
     const handleLpnChange = async (label, option) => {
         // changing lpn is a special case, since we also need to update the company and driver values
@@ -89,7 +82,7 @@ const IntakeForm = (props) => {
 
         let currentDriver = await people.find( p => p.id ===  currentLpn.person );
         if (currentDriver) {
-            dispatch(actions.handleInputChange( 'selectedDriver', [ currentDriver.id ] ))
+            handleDriverChange(currentDriver.id, true)
         } else {
             // this should not happen since a saved lpn, is always linked to a company/driver, so logging it here so we can catch ticket #86b036mtx
             console.log(`We do not have a linked driver for LPN ID: ${option[0]}`)
@@ -97,12 +90,12 @@ const IntakeForm = (props) => {
         }
 
         // show only unique people names, and if there are duplicates keep the one that is related to this lpn
-        const uniqueDriver = getUniqueDriverNames(currentLpn.person)
+        const uniqueDriver = getUniqueValue(people, 'name', [currentLpn.person])
         setUniquePeople(uniqueDriver)
     };
 
     const handleAddLpn = (name) => {
-        // if newly typed value already exists in our list, select that lpn, else, add it
+        // if newly typed value already exists in our list, select that value, else, add it
         const data = lpns.find(l => l.name === name)
         if (!data) {
             dispatch(actions.addNewLpn( name ))
@@ -113,7 +106,7 @@ const IntakeForm = (props) => {
     }
 
     const handleAddCompany = (name) => {
-        // if newly typed value already exists in our list, select that lpn, else, add it
+        // if newly typed value already exists in our list, select that value, else, add it
         const data = companies.find(l => l.name === name)
         if (!data) {
             dispatch(actions.addNewCompany( name ))
@@ -123,13 +116,49 @@ const IntakeForm = (props) => {
     }
 
     const handleAddDriver = (name) => {
-        // if newly typed value already exists in our list, select that lpn, else, add it
+        // add newly typed value to our list if it does not exist yet
         const data = people.find(l => l.name === name)
+        const id = data && data.id ? data.id : ''
+
+        if (!validateDriverInput(id, name)) {
+            dispatch(actions.handleInputChange( 'selectedDriver', [] ))
+            return
+        }
+
         if (!data) {
             dispatch(actions.addNewDriver( name ))
         } else {
-            dispatch(actions.handleInputChange( 'selectedDriver', [ data.id ] ));
+            dispatch(actions.handleInputChange( 'selectedDriver', [ id ] ))
         }
+    }
+
+    const handleDriverChange = (id, lpnChange) => {
+        const person = people.find(p => p.id === id)
+        if (!validateDriverInput(id, person.name, lpnChange)) {
+            dispatch(actions.handleInputChange( 'selectedDriver', [] ))
+            return
+        }
+        dispatch(actions.handleInputChange( 'selectedDriver', [ id ] ))
+    }
+
+    const validateDriverInput = (id, name, lpnChange) => {
+        // check if name has been previously selected as passenger
+        let msg = ''
+        const pass = passengers.find(n => n === id)
+        if (pass) {
+            msg = lpnChange ? `The associated driver for this LPN is already in the passenger list.` : `You have selected a passenger name.`
+            alert(`${msg} If '${name}' is the driver's name, please remove it in the passenger list first.`)
+            return false
+        }
+
+        // check if name has at least 2 words
+        if (name.split(' ').length < 2) {
+            msg = lpnChange ? 'The associated driver for this LPN has incomplete name.' : ''
+            alert(`${msg} Please provide driver's first and last name.`)
+            return false
+        }
+
+        return true
     }
 
     const validateFormData = async () => {
@@ -142,13 +171,6 @@ const IntakeForm = (props) => {
                     setSaving(false)
                     return;
                 };
-
-                const driver = people.find(p => p.id === selectedDriver[0])
-                if (driver && driver.name.split(' ').length < 2) {
-                    alert(`Please provide driver's first and last name.`)
-                    setSaving(false)
-                    return;
-                }
 
                 setEventInState();
             } else {
@@ -169,7 +191,7 @@ const IntakeForm = (props) => {
             : companyObj = companies.find( c => c.id === selectedCompany[0]);
 
         selectedDriver[0] === '0'
-            ? driverObj = { id: ( 'l-' + makeId(6) ), name: people.find( p => p.id === '0').name, company: companyObj.id }
+            ? driverObj = { id: ( 'l-' + makeId(6) ), name: people.find( p => p.id === '0').name }
             : driverObj = people.find( d => d.id === selectedDriver[0]);
 
         selectedLpn[0] === '0'
@@ -191,11 +213,13 @@ const IntakeForm = (props) => {
         const now = YYYY + '-' + MM + '-' + DD + ' ' + hh + ':' + mm + ':' + ss;
 
         const event = {
+            id: 'e-' + makeId(9),
             timestamp: now,
             type: selectedEventType[0],
             userId: userId || '',              // if not logged in there will be no userId
             subscriberId: subscriberId || '',  // if not logged in there will be no subscriberId
             customerId: customerId || '',      // if not logged in there will be no customerId
+            siteId: siteId || '',              // if not logged in there will be no siteId
             gateId: gateId || '',              // if not logged in there will be no gateId OR the user that is logged in does not have a valid gate assignment for some reason
             lpnObj: lpnObj,
             companyObj: companyObj,
@@ -204,7 +228,9 @@ const IntakeForm = (props) => {
             loadPhoto: loadPhotoUri,
             additionalPhotos: additionalPhotos.length > 0 ?  additionalPhotos : [],
             passengerCount: passengerCount || 0,
-            comment: comment
+            passengers: passengers,
+            comment: comment,
+            failedCount: 0,
         };
 
         dispatch(actions.saveEvent( event ));
@@ -263,7 +289,7 @@ const IntakeForm = (props) => {
                             label="LPN:"
                             items={ lpns }
                             // when we add a new lpn we assign it an id of 0 - this allows us to check it in selectedLpn later
-                            onAddItem={ () => handleAddLpn(lpnText) }
+                            onAddItem={ () => handleAddLpn( lpnText.trim() ) }
                             onSelectedItemsChange={ option => handleLpnChange( 'selectedLpn', option ) }
                             selectedItems={ selectedLpn }
                             onChangeInput={ (text)=> { dispatch(actions.handleInputChange( 'lpnText', text )) } }
@@ -281,7 +307,7 @@ const IntakeForm = (props) => {
                                 label="Company:"
                                 items = { companies }
                                 // when we add a new company we assign it an id of 0 - this allows us to check it in selectedLpn later
-                                onAddItem = { () => handleAddCompany( companyText ) }
+                                onAddItem = { () => handleAddCompany( companyText.trim() ) }
                                 onSelectedItemsChange = { option => dispatch(actions.handleInputChange( 'selectedCompany', option )) }
                                 selectedItems = { selectedCompany }
                                 onChangeInput = { (text) => { dispatch(actions.handleInputChange( 'companyText', text )) } }
@@ -301,8 +327,8 @@ const IntakeForm = (props) => {
                                 label="Driver:"
                                 items={ uniquePeople }
                                 // when we add a new person we assign them an id of 0 - this allows us to check it in selectedLpn later
-                                onAddItem={ () => handleAddDriver( driverText ) }
-                                onSelectedItemsChange={ option => dispatch(actions.handleInputChange( 'selectedDriver', option )) }
+                                onAddItem={ () => handleAddDriver( driverText.trim() ) }
+                                onSelectedItemsChange={ option => handleDriverChange(option[0]) }
                                 selectedItems={ selectedDriver }
                                 onChangeInput={ (text)=> { dispatch(actions.handleInputChange( 'driverText', text )) } }
                                 selectText="select driver"
@@ -373,13 +399,15 @@ const IntakeForm = (props) => {
 
                     {/* Toggle Adding New Photo */}
                     { (!maxPhotosReached && fRequirePhotos) &&
-                        <Button
-                            onPress={ () => { dispatch(actions.showCamera( makeId(4), null )) }  }
-                            text="Photo"
-                            icon={ "plus-circle" }
-                            color={ "grey" }
-                            fontSize={ moderateScale(14,.2) }
-                            width={ moderateScale(120,.2) } />
+                        <View style={{alignItems: 'flex-start'}}>
+                            <Button
+                                onPress={ () => { dispatch(actions.showCamera( makeId(4), null )) }  }
+                                text="Photo"
+                                icon={ "plus-circle" }
+                                color={ "grey" }
+                                fontSize={ moderateScale(14,.2) }
+                                width={ moderateScale(120,.2) } />
+                        </View>
                     }
 
                     {/* Submit Error Message */}
@@ -424,7 +452,7 @@ const IntakeForm = (props) => {
                         title="Event Save Fail"
                         confirmText="OK"
                         onConfirm={ clear }
-                        icon="check"
+                        icon="close"
                         iconColor="goldenrod" />
                     }
                 </View>
@@ -458,7 +486,7 @@ const styles = {
   },
   modalContainerStyle: {
     position: 'absolute',
-    top: -80,
+    top: 0,
     margin: 'auto',
     height: '100%',
     width: '100%',

@@ -41,6 +41,7 @@ const EventList = (props) => {
 
   // filter states
   const [showFilter, setShowFilter] = useState(false);
+  const [filtered, setFiltered] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [selectedEventType, setSelectedEventType] = useState(['']);
@@ -50,10 +51,10 @@ const EventList = (props) => {
   const [selectedStatus, setSelectedStatus] = useState([props.pending ? 1 : '']);
 
   useEffect(() => {
-    getList(1, 'initial');
+    getList(1);
   }, []);
 
-  const getList = async (page, trigger) => {
+  const getList = async (page) => {
     setCurrentPage(page);
     setShowFilter(false);
     setEventListLoading(true);
@@ -69,8 +70,8 @@ const EventList = (props) => {
     let searchParams = {
       // on initial load startDate and endDate are empty and are set based on the timestamp of the latest event on the list
       // if user did not explicitly filtered the list, then we'll continue showing the default
-      start: trigger === 'filter' && startDate ? formatDate(startDate) : '',
-      end: trigger === 'filter' && endDate ? formatDate(endDate) : '',
+      start: filtered && startDate ? formatDate(startDate) : '',
+      end: filtered && endDate ? formatDate(endDate) : '',
       type: selectedEventType[0],
       lpn: selectedLpn[0],
       company: selectedCompany[0],
@@ -106,7 +107,7 @@ const EventList = (props) => {
         return
       }
 
-      // if we still have slots to show uploaded events, add it in the list
+      // if we still have slots to show uploaded events, add it in the list and sort it by timestamp
       if (getMore) {
         if (eventList.length) {
           for (let i = 0; i < uploadedData.events.length; i++) {
@@ -118,7 +119,7 @@ const EventList = (props) => {
       }
     }
 
-    if (trigger === 'initial' && eventList[0] && eventList[0].eventTimestamp) {
+    if (!filtered && eventList[0] && eventList[0].eventTimestamp) {
       const lastTs = eventList[0].eventTimestamp
       setStartDate(new Date(moment(lastTs).subtract(7, 'days')))
       setEndDate(new Date(lastTs))
@@ -129,6 +130,17 @@ const EventList = (props) => {
     setPages(Math.ceil(eventCount / 10))
     setAllEvents(eventList)
     setEventListLoading(false)
+  }
+
+  const getPassengerNames = (idStr) => {
+    // idStr is a comma-separated string containing passenger ids that relates to people ids
+    let nameStr = ''
+    if (idStr) {
+      const passengerIds = idStr.split(',')
+      const names = people.filter(p => passengerIds.includes(p.id.toString()))
+      nameStr = names.map(p => p.name).join(', ')
+    }
+    return nameStr
   }
 
   const getPendingEvents = (page, searchParams) => {
@@ -158,18 +170,21 @@ const EventList = (props) => {
       const ev = eventList[i]
       const driverName = parseName(ev.driverObj.name)
       const event = {
-        eventId: 'e' + makeId(10),
+        eventId: ev.id,
         eventTimestamp: ev.timestamp,
         typeId: ev.type,
         lpnName: ev.lpnObj.name,
         companyName: ev.companyObj.name,
         personFirst: driverName.first,
         personLast: driverName.last,
+        eventPassengers: getPassengerNames(ev.passengers.join(',')),
         eventPassengerCount: ev.passengerCount,
         eventComment: ev.comment,
         eventLpnPhoto: ev.lpnPhoto,
         eventLoadPhoto: ev.loadPhoto,
         eventImages: ev.additionalPhotos.length > 0 ? ev.additionalPhotos.map(a => a.path).join() : "",
+        error: ev.error,
+        failedCount: ev.failedCount,
       }
       list.push(event)
     }
@@ -198,9 +213,14 @@ const EventList = (props) => {
         timeout: 15000,
 
       }).then( response => {
-        let res = response.data;
-        uploadedData.events = res.result
-        uploadedData.count = res.count
+        let ev = response.data.result
+
+        for (let i = 0; i < ev.length; i++) {
+          ev[i].eventPassengers = getPassengerNames(ev[i].eventPassengers)
+        }
+
+        uploadedData.events = ev
+        uploadedData.count = response.data.count
 
       }).catch( (error) => {
         console.log(error)
@@ -278,8 +298,9 @@ const EventList = (props) => {
       return alert('Start date must be prior to end date')
     }
 
-    await getList(1, 'filter');
-    setShowFilter(false);
+    setFiltered(true)
+    setShowFilter(false)
+    await getList(1)
   };
 
   return (

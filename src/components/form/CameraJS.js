@@ -247,7 +247,9 @@ const CameraJS = (props) => {
                             :   <TouchableOpacity onPress={ () => takePicture() } style={{ padding: scale(5) }} >
                                     <FontAwesome name="camera" size={moderateScale(60, .3)} color= "white" />
                                 </TouchableOpacity>
-                        : null
+                        :   <TouchableOpacity onPress={ () => console.log('camera loading. action unavailable.') } style={{ padding: scale(5) }} >
+                                <Text style={{ color: 'goldenrod', fontSize: scale(12) }}>Loading Camera ... </Text>
+                            </TouchableOpacity>
                     }
 
                     {/* Image selection Button  */}

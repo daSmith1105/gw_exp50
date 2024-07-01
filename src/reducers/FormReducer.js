@@ -4,6 +4,7 @@ import {
   ADD_NEW_LPN,
   ADD_NEW_COMPANY,
   ADD_NEW_DRIVER,
+  ADD_NEW_PASSENGERS,
   FORM_INCOMPLETE_ERROR,
   SHOW_CAMERA,
   TAKE_PHOTO_SUCCESS,
@@ -23,6 +24,7 @@ const INITIAL_STATE = {
   companyText: '',
   driverText: '',
   comment: '',
+  passengers: [],
   passengerCount: 0,
   isNewLpn: false,
   isNewCompany: false,
@@ -63,27 +65,30 @@ export default ( state = INITIAL_STATE, action ) => {
         selectedLpn: ['0'],
         selectedCompany: [],
         selectedDriver: [],
-        passengers: []
+        passengers: [],
+        passengerCount: 0,
       };
     case ADD_NEW_COMPANY:
       return {
         ...state,
         selectedCompany: ['0'],
-        selectedDriver: [],
-        passengers: []
       };
     case ADD_NEW_DRIVER:
       return {
         ...state,
         selectedDriver: ['0'],
-        passengers: []
+      };
+    case ADD_NEW_PASSENGERS:
+      return {
+        ...state,
+        passengers: action.passengers,
+        passengerCount: action.passengers.length,
       };
     case SHOW_CAMERA:
       return {
         ...state,
         imageType: action.name
       };
-  // Modification to existing Photo
     case SHOW_CAMERA_MODIFIED:
       return {
         ...state,

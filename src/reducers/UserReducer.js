@@ -21,7 +21,8 @@ const INITIAL_STATE = {
   gateId: '',
   siteId: '',
   siteName: '',
-  fRequirePhotos: true
+  fRequirePhotos: true,
+  fUseNames: true,
 };
 
 export default ( state = INITIAL_STATE, action ) => {
@@ -44,7 +45,8 @@ export default ( state = INITIAL_STATE, action ) => {
         gateName: user.gateName,
         siteId: user.siteId,
         siteName: user.siteName,
-        fRequirePhotos: user.fRequirePhotos === 1 ? true : false
+        fRequirePhotos: user.fRequirePhotos === 1 ? true : false,
+        fUseNames: user.fUseNames === 1 ? true : false,
       }
     // i dont think this is being used anywhere - cleanup in future
     case GET_ASSIGNMENT_DATA_SUCCESS :

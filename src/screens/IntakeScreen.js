@@ -4,6 +4,7 @@ import Footer from '../components/common/Footer';
 import IntakeForm from '../components/form/IntakeForm';
 import { useSelector } from 'react-redux';
 import AddComment from '../components/form/AddComment';
+import AddPassengers from '../components/form/AddPassengers';
 import AddPassengerCount from '../components/form/AddPassengerCount';
 import SettingsMenu from './SettingsMenu';
 import LoginScreen from '../screens/LoginScreen';
@@ -22,6 +23,7 @@ const IntakeScreen = props => {
   const showCamera = useSelector(state => state.camera.showCamera);
   const showAddComment = useSelector(state => state.modal.showAddComment);
   const showAddPassenger = useSelector(state => state.modal.showAddPassenger);
+  const fUseNames = useSelector(state => state.user.fUseNames);
 
   useKeepAwake();
 
@@ -37,7 +39,7 @@ const IntakeScreen = props => {
             <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ?
                             styles.addPassengerIOS :
                             styles.addPassengerAndroid }>
-              <AddPassengerCount />
+              {fUseNames ? <AddPassengers /> : <AddPassengerCount />}
             </View>
         }
 
@@ -55,7 +57,7 @@ const IntakeScreen = props => {
             <View style={ Device.osName === 'iOS' || Device.osName === 'iPadOS' ?
                             styles.settingsMenuIOS :
                             styles.settingsMenuAndroid }>
-              <SettingsMenu />
+              <SettingsMenu resetEventsSyncTime={props.resetEventsSyncTime} />
             </View>
         }
 
