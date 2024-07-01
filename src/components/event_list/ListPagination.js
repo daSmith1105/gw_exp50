@@ -17,7 +17,7 @@ const ListPagination = (props) => {
                 width={ 'auto' }
                 fontSize={ moderateScale(20,.2) }
                 disabled={props.currentPage > 1 ? false : true}
-                onPress={ () => props.currentPage > 1 ? props.setList(props.currentPage - 1) : null } />
+                onPress={ () => props.currentPage > 1 ? props.getList(props.currentPage - 1) : null } />
             <Text>Page {props.currentPage} of {props.pages}</Text>
             <Button
                 borderColor={'transparent'}
@@ -28,7 +28,7 @@ const ListPagination = (props) => {
                 width={ 'auto' }
                 fontSize={ moderateScale(20,.2) }
                 disabled={props.currentPage < props.pages ? false : true}
-                onPress={ () => props.currentPage < props.pages ? props.setList(props.currentPage + 1) : null } />
+                onPress={ () => props.currentPage < props.pages ? props.getList(props.currentPage + 1) : null } />
         </View>
     );
 };

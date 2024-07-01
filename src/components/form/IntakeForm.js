@@ -38,10 +38,6 @@ const IntakeForm = (props) => {
 
     const dispatch = useDispatch();
 
-    // useEffect(() => {
-    //     console.log('changes:', {selectedLpn, selectedCompany, selectedDriver, lpnText, companyText, driverText, lpns, companies, people, uniquePeople})
-    // }, [selectedLpn, selectedCompany, selectedDriver, lpns, companies, people, uniquePeople])
-
     useEffect(() => {
         // if saveEventFail of save Event Success is true, we need to set the 'saving' state to false
         if(saveEventFail || saveEventSuccess){
@@ -50,8 +46,8 @@ const IntakeForm = (props) => {
     }, [saveEventFail, saveEventSuccess]);
 
     useEffect(() => {
-        const showComp = selectedLpn.length > 0 ? true : false
-        const showDr = selectedCompany.length > 0 ? true : false
+        const showComp = selectedLpn.length > 0 && lpns.find(l => l.id === selectedLpn[0]) ? true : false
+        const showDr = selectedCompany.length > 0 && companies.find(c => c.id === selectedCompany[0]) ? true : false
         setShowCompany(showComp)
         setShowDriver(showDr)
     }, [selectedLpn, selectedCompany])

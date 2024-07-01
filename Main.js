@@ -111,7 +111,7 @@ const Main = (props) => {
   }, [events])
 
   const syncEvents = async () => {
-    if ((!events || events.length === 0)) {
+    if (!isLoggedIn || !online || !events || events.length === 0) {
       return resetEventsSyncTime();
     }
 
